@@ -3,12 +3,12 @@ entries:
   first-app:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-09-30T14:11:25.208463048-06:00"
+    created: "2021-09-30T14:32:02.373858903-06:00"
     description: A Helm chart for Kubernetes
-    digest: e8cca0480d118e5ff85cb0a352c2ced2f06ce17e9ea12a14e03253a349a76697
+    digest: 3431b349f655066e48507887e27f8e6ed2d7126f736e009a458f2b79f61c62c2
     name: first-app
     type: application
     urls:
-    - https://pages.github.ibm.com/ocervant/helm-repo/first-app-0.1.0.tgz
+    - https://oscargcervantes.github.io/helm-repo/first-app-0.1.0.tgz
     version: 0.1.0
-generated: "2021-09-30T14:11:25.206859085-06:00"
+generated: "2021-09-30T14:32:02.372709849-06:00"

@@ -237,7 +237,7 @@ Change replicas number in values.yml and upgrade helm
 
 ## Helm github repository url
 
-    https://github.ibm.com/ocervant/helm-repo
+    https://github.com/oscargcervantes/helm-repo.git
 
 ### Next check that GitHub Pages is enabled
 
@@ -246,8 +246,8 @@ Change replicas number in values.yml and upgrade helm
 
 ### Create helm package
 
-    helm package charts/first-app --destination deploy-files
-    helm repo index deploy-files/ --url https://pages.github.ibm.com/ocervant/helm-repo/
+    helm package charts/first-app #--destination deploy-files
+    helm repo index . --url https://oscargcervantes.github.io/helm-repo/ #deploy-files/ --url https://pages.github.ibm.com/ocervant/helm-repo/
 
 ### Check index.yaml
 
@@ -261,7 +261,7 @@ Change replicas number in values.yml and upgrade helm
 
 ### Check helm package file
 
-    curl https://pages.github.ibm.com/ocervant/helm-repo/deploy-files/index.yaml
+    curl https://oscargcervantes.github.io/helm-repo
 
 ### Create config.yaml
 
