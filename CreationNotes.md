@@ -263,19 +263,41 @@ Change replicas number in values.yml and upgrade helm
 
     curl https://oscargcervantes.github.io/helm-repo
 
-### Create config.yaml
+### Add helm repo
 
-* config.yaml
+    helm repo add my-repo https://oscargcervantes.github.io/helm-repo/
 
-```
-owner: ocervant
-git-repo: helm-repo
-package-path: .deploy
-token: 1234567890
-git-base-url: https://github.ibm.com/api/v3
-git-upload-url: https://github.ibm.com/api/uploads
-```
+### List repo
 
-## Install from github repo
+    helm repo list
+
+### Search
+
+    helm search repo first-app
+
+    NAME             	CHART VERSION	APP VERSION	DESCRIPTION                
+    my-repo/first-app	0.1.0        	1.16.0     	A Helm chart for Kubernetes
+
+### Helm repo update
+
+    helm repo update
+
+### Install from github repo
     
-    helm install first-app-helm --repo https://github.ibm.com/ocervant/first-app-helm -f new-values.yml
+    helm install first-app-helm my-repo/first-app
+    oc get pod
+    oc get route
+
+### Upgrade helm using new-values.yaml
+
+    helm upgrade first-app-helm my-repo/first-app -f new-values.yaml 
+    oc get pod
+
+### Helm uninstall
+
+    helm uninstall first-app-helm
+
+### Remove helm repo
+    
+    helm repo list
+    helm repo remove my-repo
