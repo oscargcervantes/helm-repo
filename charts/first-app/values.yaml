@@ -1,0 +1,16 @@
+name: first-app
+deployment:
+  image: quay.io/oscargcervantes/first-app
+  tag: v1
+  replicas: 5
+  containerPort: 4043
+service:
+  name: first-app-service
+  selector: first-app
+  port: 4043
+  targetPort: 4043
+  nodePort: 30112
+ingress:
+  name: first-app-ingress
+  host: "first-app-ingress.apps.ocp4sdev.atl.dst.ibm.com"
+  port: 4043

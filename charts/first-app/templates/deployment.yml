@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+        - name: {{ .Values.name }}
+          image: {{ .Values.deployment.image }}:{{ .Values.deployment.tag }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.deployment.containerPort }}
+
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: first-app
+#  labels:
+#    app: first-app
+#spec:
+#  replicas: 1
+#  selector:
+#    matchLabels:
+#      app: first-app
+#  template:
+#    metadata:
+#      labels:
+#        app: first-app
+#    spec:
+#      containers:
+#        - name: first-app
+#          image: quay.io/oscargcervantes/first-app:v1
+#          imagePullPolicy: Always
+#          ports:
+#            - containerPort: 4043
+      

@@ -1,0 +1,7 @@
+owner: ocervant
+git-repo: helm-repo
+package-path: .deploy
+token: 13f5fa43f4c6dd0ffac5610e917500d8c4db9acf
+git-base-url: https://github.ibm.com/api/v3
+git-upload-url: https://github.ibm.com/api/uploads
+
