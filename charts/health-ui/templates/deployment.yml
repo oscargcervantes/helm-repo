@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: health-ui
+  labels:
+    app: health-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: health-ui
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: health-ui
+    spec:
+      containers:
+      - env:
+        - name: TEST1
+          valueFrom:
+            configMapKeyRef:
+              name: health-ui-cm
+              key: TEST1
+        - name: TEST2
+          valueFrom:
+            configMapKeyRef:
+              name: health-ui-cm
+              key: TEST2
+        - name: SECRET1
+          valueFrom:
+            secretKeyRef:
+              name: health-ui-secret
+              key: SECRET1
+        image: health-ui-image
+        imagePullPolicy: Always
+        name: health-ui
+        ports:
+        - name: health-ui
+          containerPort: 8080
