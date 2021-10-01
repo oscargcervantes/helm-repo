@@ -242,7 +242,7 @@ Change replicas number in values.yml and upgrade helm
 ### Next check that GitHub Pages is enabled
 
 * Click on your git repo settings in GitHub repository and check
-* Github pages published at: https://pages.github.ibm.com/ocervant/helm-repo/
+* Github pages published at: https://oscargcervantes.github.io/helm-repo/
 
 ### Create helm package
 
