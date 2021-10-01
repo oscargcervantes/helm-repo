@@ -246,7 +246,7 @@ Change replicas number in values.yml and upgrade helm
 
 ### Create helm package
 
-    helm package charts/first-app #--destination deploy-files
+    helm package charts/{first-app,health-ui} #--destination deploy-files
     helm repo index . --url https://oscargcervantes.github.io/helm-repo/ #deploy-files/ --url https://pages.github.ibm.com/ocervant/helm-repo/
 
 ### Check index.yaml
@@ -272,6 +272,12 @@ Change replicas number in values.yml and upgrade helm
     helm repo list
 
 ### Search
+
+    helm search repo
+
+    NAME             	CHART VERSION	APP VERSION	DESCRIPTION                
+    my-repo/first-app	0.1.0        	1.16.0     	A Helm chart for Kubernetes
+    my-repo/health-ui	0.1.0        	1.16.0     	A Helm chart for Kubernetes
 
     helm search repo first-app
 
