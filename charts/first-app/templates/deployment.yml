@@ -17,31 +17,7 @@ spec:
       containers:
         - name: {{ .Values.name }}
           image: {{ .Values.deployment.image }}:{{ .Values.deployment.tag }}
-          args: [{{ .Values.deployment.app_port }}, {{ .Values.deployment.app_message }}, {{ .Values.deployment.app_messagev1 }}, {{ .Values.deployment.app_messagev2 }}, {{ .Values.deployment.app_messagev3 }}]
+          args: ["{{ .Values.deployment.app_port }}", "{{ .Values.deployment.app_message }}", "{{ .Values.deployment.app_messagev1 }}", "{{ .Values.deployment.app_messagev2 }}", "{{ .Values.deployment.app_messagev3 }}"]
           imagePullPolicy: Always
           ports:
             - containerPort: {{ .Values.deployment.containerPort }}
-
-#apiVersion: apps/v1
-#kind: Deployment
-#metadata:
-#  name: first-app
-#  labels:
-#    app: first-app
-#spec:
-#  replicas: 1
-#  selector:
-#    matchLabels:
-#      app: first-app
-#  template:
-#    metadata:
-#      labels:
-#        app: first-app
-#    spec:
-#      containers:
-#        - name: first-app
-#          image: quay.io/oscargcervantes/first-app:v1
-#          imagePullPolicy: Always
-#          ports:
-#            - containerPort: 4043
-      
