@@ -2,13 +2,13 @@ name: first-app
 deployment:
   image: quay.io/oscargcervantes/first-app
   tag: v1
-  replicas: 5
+  replicas: 3
   containerPort: 4043
   app_port: "4043"
-  message: "Default message for first-app from helm"
-  messagev1: "Default message for v1 endpoint from helm"
-  messagev2: "Default message for v2 endpoint from helm"
-  messagev3: "Default message for v3 endpoint from helm"
+  message: "Default message 3 instances for first-app from helm"
+  messagev1: "Default message 3 instances for v1 endpoint from helm"
+  messagev2: "Default message 3 instances for v2 endpoint from helm"
+  messagev3: "Default message 3 instances for v3 endpoint from helm"
 service:
   name: first-app-service
   selector: first-app
