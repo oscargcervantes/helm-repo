@@ -3,9 +3,9 @@ entries:
   first-app:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-04T22:00:07.218145055-06:00"
+    created: "2021-10-04T22:39:29.584992692-06:00"
     description: A Helm chart for Kubernetes
-    digest: 717fe3aea8a7ad4f051b64adad6e74d14afb853a4194cd96bfb86c920b872953
+    digest: a4c95b60818fd55e3886a5015ea7d2cffa7d49b97abdbb52b279b06a450d876c
     name: first-app
     type: application
     urls:
@@ -14,12 +14,12 @@ entries:
   health-ui:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-04T22:00:07.218595278-06:00"
+    created: "2021-10-04T22:39:29.585427694-06:00"
     description: A Helm chart for Kubernetes
-    digest: e510cb2d4a975356562491ddf9a6fe64eeeb287298fe3ae413cbb01141f1ec1b
+    digest: eeffa330e28260e0b7400ce8a81deb148b625d5359809010ca9bed1028a4356f
     name: health-ui
     type: application
     urls:
     - https://oscargcervantes.github.io/helm-repo/health-ui-0.1.0.tgz
     version: 0.1.0
-generated: "2021-10-04T22:00:07.217569834-06:00"
+generated: "2021-10-04T22:39:29.584425316-06:00"

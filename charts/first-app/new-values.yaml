@@ -3,8 +3,8 @@ deployment:
   image: quay.io/oscargcervantes/first-app
   tag: v1
   replicas: 3
-  containerPort: 4043
-  app_port: "4043"
+  containerPort: 40600
+  app_port: "40600"
   message: "Default message 3 instances for first-app from helm"
   messagev1: "Default message 3 instances for v1 endpoint from helm"
   messagev2: "Default message 3 instances for v2 endpoint from helm"
@@ -12,10 +12,10 @@ deployment:
 service:
   name: first-app-service
   selector: first-app
-  port: 4043
-  targetPort: 4043
+  port: 40600
+  targetPort: 40600
   nodePort: 30112
 ingress:
   name: first-app-ingress
   host: "first-app-ingress.apps.ocp4sdev.atl.dst.ibm.com"
-  port: 4043
+  port: 40600
