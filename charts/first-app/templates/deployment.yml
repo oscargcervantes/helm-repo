@@ -17,7 +17,7 @@ spec:
       containers:
         - name: {{ .Values.name }}
           image: "{{ .Values.deployment.image }}:{{ .Values.deployment.tag }}"
-          args: [{{ .Values.deployment.app_port }}, {{ .Values.deployment.app_message }}, {{ .Values.deployment.app_messagev1 }}, {{ .Values.deployment.app_messagev2 }}, {{ .Values.deployment.app_messagev3 }}]
+          args: ["{{ .Values.deployment.app_port }}", "{{ .Values.deployment.app_message }}", "{{ .Values.deployment.app_messagev1 }}", "{{ .Values.deployment.app_messagev2 }}", "{{ .Values.deployment.app_messagev3 }}"]
           imagePullPolicy: Always
           ports:
             - containerPort: {{ .Values.deployment.containerPort }}
