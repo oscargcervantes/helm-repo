@@ -5,10 +5,10 @@ deployment:
   replicas: 5
   containerPort: 40500
   app_port: "40500"
-  message: "Default message for first-app from helm"
-  messagev1: "Default message for v1 endpoint from helm"
-  messagev2: "Default message for v2 endpoint from helm"
-  messagev3: "Default message for v3 endpoint from helm"
+  app_message: "Default message for first-app from helm"
+  app_messagev1: "Default message for v1 endpoint from helm"
+  app_messagev2: "Default message for v2 endpoint from helm"
+  app_messagev3: "Default message for v3 endpoint from helm"
 service:
   name: first-app-service
   selector: first-app
