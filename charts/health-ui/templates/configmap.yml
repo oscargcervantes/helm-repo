@@ -4,4 +4,4 @@ data:
   TEST2: test2
 kind: ConfigMap
 metadata:
-  name: health-ui-cm
+  name: {{ .Values.configmap.name }}

@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: health-ui
+  name: {{ .Values.name }}
   labels:
-    app: health-ui
+    app: {{ .Values.name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.deployment.replicas }}
   selector:
     matchLabels:
-      app: health-ui
+      app: {{ .Values.name }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -17,28 +17,28 @@ spec:
   template:
     metadata:
       labels:
-        app: health-ui
+        app: {{ .Values.name }}
     spec:
       containers:
       - env:
         - name: TEST1
           valueFrom:
             configMapKeyRef:
-              name: health-ui-cm
+              name: {{ .Values.configmap.name }}
               key: TEST1
         - name: TEST2
           valueFrom:
             configMapKeyRef:
-              name: health-ui-cm
+              name: {{ .Values.configmap.name }}
               key: TEST2
         - name: SECRET1
           valueFrom:
             secretKeyRef:
-              name: health-ui-secret
+              name: {{ .Values.configmap.secret }}
               key: SECRET1
-        image: health-ui-image
-        imagePullPolicy: Always
-        name: health-ui
+        image: {{ .Values.deployment.image }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        name: {{ .Values.name }}
         ports:
-        - name: health-ui
-          containerPort: 8080
+        - name: {{ .Values.name }}
+          containerPort: {{ .Values.deployment.containerPort }}

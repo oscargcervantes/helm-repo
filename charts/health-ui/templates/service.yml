@@ -2,13 +2,13 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: health-ui
-  name: health-ui
+    app: {{ .Values.name }}
+  name: {{ .Values.service.name }}
 spec:
   selector:
-    app: health-ui
+    app: {{ .Values.name }}
   ports:
-  - name: 8080-tcp
-    port: 8080
+  - name: "{{ .Values.service.port }}-tcp"
+    port: {{ .Values.service.port }}
     protocol: TCP
-    targetPort: 8080
+    targetPort: {{ .Values.service.targetPort }}
