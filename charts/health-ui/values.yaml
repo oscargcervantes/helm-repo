@@ -18,3 +18,7 @@ service:
   name: health-ui-service
   port: 8080
   targetPort: 8080
+ingress:
+  name: health-ui-ingress
+  host: "health-ui-ingress.apps.ocp4sdev.atl.dst.ibm.com"
+  port: 8080
