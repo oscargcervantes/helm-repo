@@ -3,9 +3,9 @@ entries:
   first-app:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-12T11:08:14.088190976-06:00"
+    created: "2021-10-14T12:16:08.790310945-06:00"
     description: A Helm chart for Kubernetes
-    digest: 9b61f3e1d361543ef6998be841738b3f66af0b8910e911d54088dc83192b71b2
+    digest: a3027f2d40f7f6fed3022a24261604448b43a7e9af93eeb81dd47ca3948b2c60
     name: first-app
     type: application
     urls:
@@ -14,12 +14,23 @@ entries:
   health-ui:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-12T11:08:14.088536692-06:00"
+    created: "2021-10-14T12:16:08.791678508-06:00"
     description: A Helm chart for Kubernetes
-    digest: 95ec55256e22dce2ab8fb5d84407cb91173f4a04d4fcd63ff2adfff6e25c2abb
+    digest: 12600a44ba857e55a605b72a9e2d3560a5605f0f81c346969a3b3969480474c0
     name: health-ui
     type: application
     urls:
     - https://oscargcervantes.github.io/helm-repo/health-ui-0.1.0.tgz
     version: 0.1.0
-generated: "2021-10-12T11:08:14.087667046-06:00"
+  jboss-app:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-10-14T12:16:08.792694031-06:00"
+    description: A Helm chart for Kubernetes
+    digest: a38dcf5c4a5febadc41c2af8dd9123e6ecb891830360ab76b1d6fb9a55a06dbf
+    name: jboss-app
+    type: application
+    urls:
+    - https://oscargcervantes.github.io/helm-repo/jboss-app-0.1.0.tgz
+    version: 0.1.0
+generated: "2021-10-14T12:16:08.788365593-06:00"
