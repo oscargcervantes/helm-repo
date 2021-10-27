@@ -21,13 +21,13 @@ spec:
         - containerPort: {{ .Values.deployment.containerPort }}
         livenessProbe:
           httpGet:
-            path: {{ .Values.healthcheck.liveness.path }}
+            path: {{ .Values.healthcheck.livenessPath }}
             port: {{ .Values.deployment.containerPort }}
           failureThreshold: 1
           periodSeconds: 10
         startupProbe:
           httpGet:
-            path: {{ .Values.healthcheck.startup.path }}
+            path: {{ .Values.healthcheck.startupPath }}
             port: {{ .Values.deployment.containerPort }}
           failureThreshold: 30
           periodSeconds: 10
