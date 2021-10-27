@@ -3,9 +3,9 @@ entries:
   first-app:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-27T09:59:34.313130067-06:00"
+    created: "2021-10-27T10:05:22.556375108-06:00"
     description: A Helm chart for Kubernetes
-    digest: 2024c32db6c072c715954998ec8c288d9df07e2127b83f231e69d2c464b99a5b
+    digest: e9c11c124aba3b3f9ae22798acf9e2d4373d341ed7957ff65f71f6e79c20f295
     name: first-app
     type: application
     urls:
@@ -14,9 +14,9 @@ entries:
   health-ui:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-27T09:59:34.313602676-06:00"
+    created: "2021-10-27T10:05:22.556764799-06:00"
     description: A Helm chart for Kubernetes
-    digest: 7f517108a62280004fe3853d889ff3f5b2bd829cb3fd6069f3ae16391495aa07
+    digest: d4d34589bb78b55052b13cd70a9317dc084d74a722a891df91f38b7f218f926f
     name: health-ui
     type: application
     urls:
@@ -25,9 +25,9 @@ entries:
   jboss-app:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-27T09:59:34.313999997-06:00"
+    created: "2021-10-27T10:05:22.557066443-06:00"
     description: A Helm chart for Kubernetes
-    digest: 6615b484abba68cf06da30e19d9b9b662c80301e74a79ae035d94cbae41b2e49
+    digest: 46404c471bb8a6c54f250720d6956bd6c715ba80211455ce1dc469282ce256a8
     name: jboss-app
     type: application
     urls:
@@ -36,12 +36,12 @@ entries:
   jboss-demo-app:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-27T09:59:34.314359584-06:00"
+    created: "2021-10-27T10:05:22.557410025-06:00"
     description: A Helm chart for Kubernetes
-    digest: afd88a489437500df836b7ff77c817682047fa154ec1a7a78e52eca83da0b5fa
+    digest: b731b5de968edfe6a1b57df57ac0eb541c3a1b649061ea02a392df1e2ee2fd47
     name: jboss-demo-app
     type: application
     urls:
     - https://oscargcervantes.github.io/helm-repo/jboss-demo-app-0.1.0.tgz
     version: 0.1.0
-generated: "2021-10-27T09:59:34.310916951-06:00"
+generated: "2021-10-27T10:05:22.555788678-06:00"
