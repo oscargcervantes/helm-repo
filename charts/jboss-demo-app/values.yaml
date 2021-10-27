@@ -2,14 +2,19 @@ name: jboss-demo-app
 deployment:
   name: jboss-demo-app-deployment
   replicas: 5
-  image: quay.io/oscargcervantes/jboss-demo-app
+  image: /oscargcervantes/jboss-demo-app
   tag: v1
-  containerPort: 8080
+  containerPort: 9080
 service:
   name: jboss-demo-app-service
-  port: 8080
-  targetPort: 8080
+  port: 9080
+  targetPort: 9080
 ingress:
   name: jboss-demo-app-ingress
-  host: jboss-demo-app.apps.ocp4sdev.atl.dst.ibm.com
+  host: jboss-demo-app-helm.apps.ocp4sdev.atl.dst.ibm.com
   path: /demoapp
+healthcheck:
+  startup:
+    path: /demoapp/api/ping
+  liveness
+    path: /demoapp/api/ping

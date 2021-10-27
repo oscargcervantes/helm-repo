@@ -19,3 +19,15 @@ spec:
         image: {{ .Values.deployment.image }}:{{ .Values.deployment.tag }}
         ports:
         - containerPort: {{ .Values.deployment.containerPort }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.healthcheck.liveness.path }}
+            port: {{ .Values.deployment.containerPort }}
+          failureThreshold: 1
+          periodSeconds: 10
+        startupProbe:
+          httpGet:
+            path: {{ .Values.healthcheck.startup.path }}
+            port: {{ .Values.deployment.containerPort }}
+          failureThreshold: 30
+          periodSeconds: 10
