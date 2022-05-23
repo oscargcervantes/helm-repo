@@ -1,0 +1,128 @@
+{{ if and (ge .Capabilities.KubeVersion.Major "1") (ge .Capabilities.KubeVersion.Minor "16")}}
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    {{- include "labels.rtfComponent" . | nindent 4 }}
+    {{- include "labels.standard" . | nindent 4 }}
+  name: persistencegateways.rtf.mulesoft.com
+  namespace: {{ .Release.Namespace }}
+spec:
+  group: rtf.mulesoft.com
+  names:
+    kind: PersistenceGateway
+    plural: persistencegateways
+    singular: persistencegateway
+    shortNames:
+      - pg
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                objectStore:
+                  type: object
+                  properties:
+                    backendDriver:
+                      default: postgresql
+                      type: string
+                    maxBackendConnectionPool:
+                      default: 20
+                      type: integer
+                    replicas:
+                      default: 2
+                      type: integer
+                    resources:
+                      type: object
+                      properties:
+                        limits:
+                          type: object
+                          properties:
+                            cpu:
+                              default: "250m"
+                              type: string
+                            memory:
+                              default: "150Mi"
+                              type: string
+                        requests:
+                          type: object
+                          properties:
+                            cpu:
+                              default: "200m"
+                              type: string
+                            memory:
+                              default: "75Mi"
+                              type: string
+                    secretRef:
+                      type: object
+                      properties:
+                        name:
+                          default: "persistence-gateway-creds"
+                          type: string
+{{ else }}
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    {{- include "labels.rtfComponent" . | nindent 4 }}
+    {{- include "labels.standard" . | nindent 4 }}
+  name: persistencegateways.rtf.mulesoft.com
+  namespace: {{ .Release.Namespace }}
+spec:
+  group: rtf.mulesoft.com
+  names:
+    kind: PersistenceGateway
+    plural: persistencegateways
+    singular: persistencegateway
+  scope: Namespaced
+  subresources:
+    status: {}
+  versions:
+    - name: v1
+      served: true
+      storage: true
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          type: object
+          properties:
+            objectStore:
+              type: object
+              properties:
+                backendDriver:
+                  type: string
+                maxBackendConnectionPool:
+                  type: integer
+                replicas:
+                  type: integer
+                resources:
+                  type: object
+                  properties:
+                    limits:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                        memory:
+                          type: string
+                    requests:
+                      type: object
+                      properties:
+                        cpu:
+                          type: string
+                        memory:
+                          type: string
+                secretRef:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+{{ end }}

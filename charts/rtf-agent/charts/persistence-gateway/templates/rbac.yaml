@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rtf-persistence-gateway
+  namespace: {{ .Release.Namespace }}
+imagePullSecrets:
+  - name: {{ .Values.global.image.pullSecretName }}
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rtf:persistence-gateway-crb-read-only
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rtf:persistence-gateway-clro-read-only
+subjects:
+  - kind: ServiceAccount
+    name: rtf-persistence-gateway
+    namespace: {{ .Release.Namespace }}
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rtf:persistence-gateway-clro-read-only
+rules:
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - pods
+      - secrets
+    verbs: ["get", "list", "watch"]
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: rtf:persistence-gateway-role
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - policy
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+    resourceNames:
+      - persistence-gateway-psp
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rtf:persistence-gateway-rb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+roleRef:
+  kind: Role
+  name: rtf:persistence-gateway-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: rtf-persistence-gateway
+    namespace: {{ .Release.Namespace }}
+---
+
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: persistence-gateway-psp
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+spec:
+  privileged: false
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  hostPorts:
+    - min: 0
+      max: 65535
+  volumes:
+    - '*'
+

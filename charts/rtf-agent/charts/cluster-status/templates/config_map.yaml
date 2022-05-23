@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-status-output
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}

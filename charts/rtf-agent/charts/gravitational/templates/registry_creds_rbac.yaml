@@ -1,0 +1,60 @@
+{{ if eq .Values.global.cluster.flavor "gravitational" }}
+{{ if eq .Values.global.image.provider "aws" }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rtf:registry-creds
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - list
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - get
+  - update
+  - patch
+- apiGroups:
+  - policy
+  resourceNames:
+  - privileged
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rtf:registry-creds
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rtf:registry-creds
+subjects:
+  - kind: ServiceAccount
+    name: registry-creds
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: registry-creds
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+imagePullSecrets:
+  - name: {{ .Values.global.image.pullSecretName }}
+{{ end }}
+{{ end }}

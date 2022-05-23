@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    {{- include "annotations.componentTag" "application_management" | nindent 4 }}
+  labels:
+    {{- include "labels.rtfComponent" . | nindent 4 }}
+    {{- include "labels.standard" . | nindent 4 }}
+    {{- include "labels.enableComponentClusterHealth" . | nindent 4 }}
+    app: mule-clusterip-service
+  name: mule-clusterip-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mule-clusterip-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      labels:
+        app: mule-clusterip-service
+      name: mule-clusterip-service
+    spec:
+      serviceAccountName: mule-clusterip-service
+      priorityClassName: rtf-components-high-priority
+      nodeSelector:
+        {{- include "linux_node_selector_labels" . | nindent 8 }}
+      {{ if eq .Values.global.cluster.flavor "gravitational" }}
+        node-role.kubernetes.io/master: "true"
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      {{ else if .Values.global.core.tolerations }}
+      tolerations:
+      {{- toYaml .Values.global.core.tolerations | nindent 8 -}}
+      {{ end }}
+      {{ if .Values.global.core.affinity }}
+      affinity:
+      {{- toYaml .Values.global.core.affinity | nindent 8 -}}
+      {{ end }}
+      containers:
+      - name: mule-clusterip-service
+        image: {{ template "image.registryEndpoint" . }}/{{- include "MULE_CLUSTER_IP_IMAGE" .}}
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 2020
+        readinessProbe:
+          httpGet:
+            path: api/v1/status
+            port: 8080
+          initialDelaySeconds: 20
+        ports:
+          - containerPort: 8080
+            protocol: TCP
+        resources:
+          requests:
+            cpu: 50m
+            memory: 100Mi
+          limits:
+            cpu: 500m
+            memory: 500Mi
+      terminationGracePeriodSeconds: 30

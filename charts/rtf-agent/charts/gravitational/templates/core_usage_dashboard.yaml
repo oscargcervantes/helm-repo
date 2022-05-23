@@ -1,0 +1,188 @@
+{{ if eq .Values.global.cluster.flavor "gravitational" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+    monitoring: dashboard
+    rtf: grafana-dashboards
+  name: dashboard-core-usage
+  namespace: {{ default "monitoring" (.Values.global.influxdb).namespace }}
+data:
+  dashboard: |-
+    {
+        "annotations": {
+          "list": []
+        },
+        "editable": false,
+        "hideControls": false,
+        "id": null,
+        "links": [],
+        "originalTitle": "Ingress",
+        "refresh": false,
+        "rows": [
+        {
+          "collapse": false,
+          "editable": false,
+          "height": "250px",
+          "panels": [
+          {
+            "aliasColors": {},
+            "bars": false,
+            "datasource": null,
+            "editable": false,
+            "error": false,
+            "fill": 1,
+            "grid": {
+              "leftLogBase": 1,
+              "leftMax": null,
+              "leftMin": null,
+              "rightLogBase": 1,
+              "rightMax": null,
+              "rightMin": null,
+              "threshold1": null,
+              "threshold1Color": "rgba(216, 200, 27, 0.27)",
+              "threshold2": null,
+              "threshold2Color": "rgba(234, 112, 112, 0.22)"
+            },
+            "id": 4,
+            "isNew": true,
+            "legend": {
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "show": true,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 2,
+            "links": [],
+            "nullPointMode": "connected",
+            "percentage": false,
+            "pointradius": 5,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "span": 12,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+            {
+              "alias": "Usage",
+              "dsType": "influxdb",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "query": "SELECT sum(\"value_mean\")/1000 FROM \"medium\".\"cpu/usage_rate/medium\"  WHERE \"labels\" =~ /type:MuleApplication/ AND \"container_name\" = 'app' AND time < now() - 24h AND $timeFilter GROUP BY time(5m) fill(null)",
+              "rawQuery": true
+            },
+            {
+              "alias": "Usage",
+              "dsType": "influxdb",
+              "refId": "B",
+              "resultFormat": "time_series",
+              "query": "SELECT sum(\"value\")/1000 FROM \"cpu/usage_rate\"  WHERE \"labels\" =~ /type:MuleApplication/ AND \"container_name\" = 'app' AND $timeFilter GROUP BY time(1m) fill(null)",
+              "rawQuery": true
+            },
+            {
+              "alias": "Usage",
+              "dsType": "influxdb",
+              "refId": "C",
+              "resultFormat": "time_series",
+              "query": "SELECT sum(\"value_mean\")/1000 FROM \"long\".\"cpu/usage_rate/long\"  WHERE \"labels\" =~ /type:MuleApplication/ AND \"container_name\" = 'app' AND time < now() - 672h AND $timeFilter GROUP BY time(1h) fill(null)",
+              "rawQuery": true
+            }
+            ],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "CPU Core Usage",
+            "tooltip": {
+              "shared": true,
+              "value_type": "cumulative",
+              "sort": 0
+            },
+            "type": "graph",
+            "gridPos": {
+              "x": 0,
+              "y": 7,
+              "w": 24,
+              "h": 7
+            },
+            "yaxes": [
+            {
+              "show": true,
+              "min": null,
+              "max": null,
+              "logBase": 1,
+              "format": "short",
+              "label": "Cores"
+            },
+            {
+              "show": true,
+              "min": null,
+              "max": null,
+              "logBase": 1,
+              "format": "short"
+            }
+            ],
+            "xaxis": {
+              "show": true,
+              "mode": "time",
+              "name": null,
+              "values": [],
+              "buckets": null
+            },
+            "thresholds": [],
+            "yaxis": {
+              "align": false,
+              "alignLevel": null
+            },
+            "dashes": false,
+            "dashLength": 10,
+            "spaceLength": 10
+          }
+          ],
+          "title": "Row"
+        }
+        ],
+        "schemaVersion": 8,
+        "sharedCrosshair": false,
+        "style": "dark",
+        "tags": [],
+        "templating": {},
+        "time": {
+          "from": "now-30m",
+          "to": "now"
+        },
+        "timepicker": {
+          "now": true,
+          "refresh_intervals": [
+            "5s",
+            "10s",
+            "30s",
+            "1m",
+            "5m",
+            "15m",
+            "30m",
+            "1h",
+            "2h",
+            "1d"
+          ],
+          "time_options": [
+            "5m",
+            "15m",
+            "1h",
+            "6h",
+            "12h",
+            "24h",
+            "2d",
+            "7d",
+            "30d"
+          ]
+        },
+        "timezone": "browser",
+        "title": "CPU Core Usage",
+        "version": 1
+    }
+{{ end }}

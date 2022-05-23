@@ -1,0 +1,167 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    {{- include "annotations.componentTag" "application_management" | nindent 4 }}
+  labels:
+    {{- include "labels.rtfComponent" . | nindent 4 }}
+    {{- include "labels.standard" . | nindent 4 }}
+    {{- include "labels.enableComponentClusterHealth" . | nindent 4 }}
+    app: agent
+  name: agent
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      labels:
+        app: agent
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: prometheus
+      name: agent
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/app_config_map.yaml") . | sha256sum }}
+        checksum/generated-properties-secret: {{ include (print $.Template.BasePath "/generated_properties_secret.yaml") . | sha256sum }}
+        checksum/custom-properties-secret: {{ include (print $.Template.BasePath "/custom_properties_secret.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: rtf-agent
+      priorityClassName: rtf-components-high-priority
+      nodeSelector:
+        {{- include "linux_node_selector_labels" . | nindent 8 }}
+      {{- if eq .Values.global.cluster.flavor "gravitational" }}
+        node-role.kubernetes.io/master: "true"
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+      {{ else if .Values.global.core.tolerations }}
+      tolerations:
+      {{- toYaml .Values.global.core.tolerations | nindent 8 -}}
+      {{ end }}
+      {{ if .Values.global.core.affinity }}
+      affinity:
+      {{- toYaml .Values.global.core.affinity | nindent 8 -}}
+      {{ end }}
+      containers:
+        - name: app
+          image: {{ template "image.name" . }}
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: generated-properties
+            - configMapRef:
+                name: agent-config-override
+                optional: true
+            - configMapRef:
+                name: restore-data
+                optional: true
+          env:
+            - name: QUEUE_CLIENT_SSL_TRUSTSTOREPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: agent-keystore
+                  key: truststore-password
+            - name: PROXY_HTTP
+              valueFrom:
+                secretKeyRef:
+                  name: custom-properties
+                  key: HTTP_PROXY
+                  optional: true
+            - name: PROXY_NOPROXY
+              valueFrom:
+                secretKeyRef:
+                  name: custom-properties
+                  key: HTTP_NO_PROXY
+                  optional: true
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 2020
+          volumeMounts:
+            - name: agent-keystore-volume
+              mountPath: /opt/app/ssl
+          {{- if eq .Values.global.cluster.flavor "gravitational" }}
+            - name: kubectl
+              mountPath: /opt/app/bin/kubectl
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: api/v1/status/ready
+              port: 8080
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet:
+              path: api/v1/status/liveness
+              port: 8080
+            initialDelaySeconds: 1800
+            periodSeconds: 60
+            timeoutSeconds: 5
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+          {{- toYaml  $.Values.agent.app.resources | nindent 12 }}
+        - name: rtfd
+          image: {{ template "image.registryEndpoint" . }}/ {{- include "CONTAINER_RTF_DAEMON_IMAGE" .}}
+          envFrom:
+            - configMapRef:
+                name: app-config
+          env:
+           - name: HELM_REPOSITORY_CONFIG
+             value: /opt/app/helm-config/repositories.yaml
+           - name: HELM_REPOSITORY_CACHE
+             value: /tmp/helm-cache/
+           - name: HTTPS_PROXY
+             valueFrom:
+               secretKeyRef:
+                 name: custom-properties
+                 key: HTTP_PROXY
+                 optional: true
+           - name: NO_PROXY
+             valueFrom:
+               secretKeyRef:
+                 name: custom-properties
+                 key: HTTP_NO_PROXY
+                 optional: true
+
+          securityContext:
+            runAsUser: 2020
+         {{- if .Values.helm }}
+          volumeMounts:
+            - name: helm-repository-file
+              mountPath: /opt/app/helm-config
+            - name: rtfd-tmp
+              mountPath: /tmp
+          {{- end }}
+          resources:
+          {{- toYaml  $.Values.agent.rtfd.resources | nindent 12 }}
+      volumes:
+        - name: agent-keystore-volume
+          secret:
+            secretName: agent-keystore
+            optional: true
+      {{- if .Values.helm }}
+        - name: helm-repository-file
+          secret:
+            secretName: helm-repository-file
+            optional: true
+        - name: rtfd-tmp
+          emptyDir: {}
+      {{- end }}
+      {{- if eq .Values.global.cluster.flavor "gravitational" }}
+        - name: kubectl
+          hostPath:
+            path: /usr/bin/kubectl
+        - name: helm
+          hostPath:
+            path: /usr/bin/helm
+      {{- end }}
+      securityContext: {}
+      terminationGracePeriodSeconds: 90

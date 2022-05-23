@@ -1,0 +1,19 @@
+{{ if eq "true" (include "isGravity" . ) }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: agent
+    {{- include "labels.standard" . | nindent 4 }}
+  name: deployer
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+      nodePort: 30945
+  selector:
+    app: agent
+  type: NodePort
+{{ end }}

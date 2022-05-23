@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-cache
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- include "annotations.componentTag" "static_assets" | nindent 4 }}
+  labels:
+    {{- include "labels.rtfComponent" . | nindent 4 }}
+    {{- include "labels.standard" . | nindent 4 }}
+    {{- include "labels.enableComponentClusterHealth" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: resource-cache
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      labels:
+        app: resource-cache
+      annotations:
+        #Generate random number at upsert to force restart
+        restartAlwaysWithInstall: {{ randAlphaNum 5 | quote }}
+    spec:
+      automountServiceAccountToken: false
+      priorityClassName: rtf-components-high-priority
+      serviceAccountName: resource-cache
+      nodeSelector:
+        {{- include "linux_node_selector_labels" . | nindent 8 }}
+      {{ if eq .Values.global.cluster.flavor "gravitational" }}
+        node-role.kubernetes.io/master: "true"
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      {{ else if .Values.global.core.tolerations }}
+      tolerations:
+      {{- toYaml .Values.global.core.tolerations | nindent 8 -}}
+      {{ end }}
+      {{ if .Values.global.core.affinity }}
+      affinity:
+      {{- toYaml .Values.global.core.affinity | nindent 8 -}}
+      {{ end }}
+      securityContext:
+        runAsUser: 2020
+      containers:
+      - name: nginx
+        image: {{ template "image.registryEndpoint" . }}/{{- include "NGINX_IMAGE" .}}
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx
+        - name: cache-vol
+          mountPath: /var/cache/nginx
+        ports:
+        - containerPort: 8010
+        resources:
+        {{ toYaml  $.Values.nginx.resources | nindent 10 }}
+      - name: fetcher
+        image: {{ template "image.registryEndpoint" . }}/{{- include "RESOURCE_FETCHER_IMAGE" .}}
+        volumeMounts:
+        - name: agent-keystore-volume
+          mountPath: /opt/app/ssl
+        args:
+        - /app
+        ports:
+        - containerPort: 8011
+        resources:
+        {{ toYaml  $.Values.fetcher.resources | nindent 10 }}
+        env:
+        - name: HTTP_PROXY
+          valueFrom:
+            secretKeyRef:
+              name: custom-properties
+              key: HTTP_PROXY
+              optional: true
+        - name: HTTPS_PROXY
+          valueFrom:
+            secretKeyRef:
+              name: custom-properties
+              key: HTTP_PROXY
+              optional: true
+        - name: NO_PROXY
+          valueFrom:
+            secretKeyRef:
+              name: custom-properties
+              key: HTTP_NO_PROXY
+              optional: true
+        - name: OVERRIDE_HOST
+          valueFrom:
+            secretKeyRef:
+              name: generated-properties
+              key: CONFIGRESOLVER_HOST
+              optional: true
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: resource-cache-config
+      - name: cache-vol
+        emptyDir: {}
+      - name: agent-keystore-volume
+        secret:
+          secretName: agent-keystore

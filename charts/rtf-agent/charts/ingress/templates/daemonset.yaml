@@ -1,0 +1,87 @@
+{{ if eq .Values.global.cluster.flavor "gravitational" }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    {{- include "annotations.componentTag" "ingress" | nindent 4 }}
+  labels:
+    {{- include "labels.rtfComponent" . | nindent 4 }}
+    {{- include "labels.standard" . | nindent 4 }}
+    {{- include "labels.enableComponentClusterHealth" . | nindent 4 }}
+    type: Edge
+  name: ingress
+  namespace: {{ .Release.Namespace }}
+spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: edge
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      labels:
+        app: edge
+      name: edge
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      priorityClassName: rtf-components-high-priority
+      securityContext: {}
+      serviceAccount: sf-edge
+      serviceAccountName: sf-edge
+      nodeSelector:
+        {{- include "linux_node_selector_labels" . | nindent 8 }}
+        rtf.mulesoft.com/ingress: none
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/ingress
+        operator: Exists
+      volumes:
+      - emptyDir:
+          medium: Memory
+        name: csmsecrets
+      containers:
+      - name: edge
+        image: {{ template "image.registryEndpoint" . }}/{{- include "EDGE_IMAGE" .}}
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            host: 127.0.0.1
+            port: 18080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          failureThreshold: 1
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            host: 127.0.0.1
+            port: 18080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 5
+        ports:
+        - containerPort: 80
+          hostPort: 80
+          protocol: TCP
+        - containerPort: 443
+          hostPort: 443
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /mnt/ramdisk
+          name: csmsecrets
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+{{ end }}

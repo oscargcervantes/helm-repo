@@ -1,0 +1,132 @@
+{{ if eq .Values.global.cluster.flavor "gravitational" }}
+{{ if eq .Values.global.image.provider "aws" }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: registry-creds
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- include "annotations.componentTag" "static_assets" | nindent 4 }}
+  labels:
+    {{- include "labels.rtfComponent" . | nindent 4 }}
+    {{- include "labels.standard" . | nindent 4 }}
+    {{- include "labels.enableComponentClusterHealth" . | nindent 4 }}
+spec:
+  schedule: "0 */9 * * *"
+  concurrencyPolicy: Replace
+  # 4.5 hours
+  startingDeadlineSeconds: 16200
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: registry-creds
+    spec:
+      template:
+        spec:
+          serviceAccountName: registry-creds
+          priorityClassName: rtf-components-high-priority
+          restartPolicy: OnFailure
+          nodeSelector:
+            {{- include "linux_node_selector_labels" . | nindent 12 }}
+            node-role.kubernetes.io/master: "true"
+          tolerations:
+          - effect: NoSchedule
+            key: node-role.kubernetes.io/master
+            operator: Exists
+          containers:
+          - name: job
+            image: leader.telekube.local:5000/rtf-upgrade
+            env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: registry-creds
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: registry-creds
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: registry-creds
+                  key: AWS_REGION
+            - name: HTTP_PROXY
+              valueFrom:
+                secretKeyRef:
+                  name: custom-properties
+                  key: HTTP_PROXY
+                  optional: true
+            - name: HTTPS_PROXY
+              valueFrom:
+                secretKeyRef:
+                  name: custom-properties
+                  key: HTTP_PROXY
+                  optional: true
+            - name: HTTPS_PROXY
+              valueFrom:
+                secretKeyRef:
+                  name: custom-properties
+                  key: HTTP_PROXY
+                  optional: true
+            - name: NO_PROXY
+              valueFrom:
+                secretKeyRef:
+                  name: custom-properties
+                  key: HTTP_NO_PROXY
+                  optional: true
+            command:
+            - "bash"
+            - "-c"
+            - |
+              set -o errexit
+              export NO_PROXY="$KUBERNETES_SERVICE_HOST,$NO_PROXY"
+
+              aws --region $AWS_REGION ecr get-authorization-token > ecr.response
+
+              ecrEndpoint=$(cat ecr.response | jq -r ".authorizationData[0].proxyEndpoint")
+              ecrToken=$(cat ecr.response | jq -r ".authorizationData[0].authorizationToken")
+              EXISTING_SECRETS=$(kubectl get secret {{ .Values.global.image.pullSecretName }} -nrtf -o jsonpath='{.data.\.dockerconfigjson}'| base64 -d)
+              EXISTING_RUNTIME_REGISTRY_CREDS=$(echo $EXISTING_SECRETS| jq '.auths | with_entries(select(.key|match("rtf-runtime-registry";"i")))[]')
+              if [ -z "$EXISTING_RUNTIME_REGISTRY_CREDS" ]; then
+                printf '{"auths":{"%s":{"auth":"%s","email":"none"}}}' $ecrEndpoint $ecrToken > /tmp/dockerconfigjson
+              else
+                runtime_registry_key=$(echo $EXISTING_SECRETS| jq -r '.auths | to_entries | map(select(.key | match("rtf-runtime-registry";"i"))) | map(.key)[]')
+                username=$(echo $EXISTING_RUNTIME_REGISTRY_CREDS| jq -r '.username')
+                password=$(echo $EXISTING_RUNTIME_REGISTRY_CREDS| jq -r '.password')
+                auth=$(echo $EXISTING_RUNTIME_REGISTRY_CREDS| jq -r '.auth')
+                email=$(echo $EXISTING_RUNTIME_REGISTRY_CREDS| jq -r '.email')
+                printf '{"auths":{"%s":{"auth":"%s","email":"none"},"%s":{"username":"%s","password":"%s","auth":"%s","email":"%s"}}}' $ecrEndpoint $ecrToken $runtime_registry_key $username $password $auth $email > /tmp/dockerconfigjson
+              fi
+
+              IMAGE_PULL_SECRET=$(cat /tmp/dockerconfigjson | base64 -w0)
+
+              NAMESPACES=$(kubectl get namespaces -l rtf.mulesoft.com/role=workers -o=jsonpath='{range .items[*]}{.metadata.name} {end}')
+              NAMESPACES+=rtf
+
+              for NS in ${NAMESPACES[*]}
+              do
+                echo "Updating namespace \"$NS\""
+                cat <<EOF | kubectl apply -f -
+              apiVersion: v1
+              type: kubernetes.io/dockerconfigjson
+              kind: Secret
+              metadata:
+                name: {{ .Values.global.image.pullSecretName }}
+                namespace: $NS
+              data:
+                .dockerconfigjson: "$IMAGE_PULL_SECRET"
+              EOF
+              done
+            resources:
+              requests:
+                cpu: 10m
+                memory: 50Mi
+              limits:
+                cpu: 100m
+                memory: 100Mi
+{{ end }}
+{{ end }}

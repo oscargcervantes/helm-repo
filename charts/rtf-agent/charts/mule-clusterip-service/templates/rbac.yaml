@@ -1,0 +1,49 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: rtf:mule-clusterip-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+rules:
+- apiGroups: [""]
+  resources: ["endpoints"]
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - policy
+  resourceNames:
+  - rtf-restricted
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: rtf:mule-clusterip-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rtf:mule-clusterip-service
+subjects:
+  - kind: ServiceAccount
+    name: mule-clusterip-service
+    namespace: {{ .Release.Namespace }}
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mule-clusterip-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+imagePullSecrets:
+  - name: {{ .Values.global.image.pullSecretName }}

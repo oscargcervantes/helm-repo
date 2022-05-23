@@ -1,0 +1,80 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: rtf:resource-cache
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - rtf-resource-cache
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: rtf:resource-cache
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: rtf:resource-cache
+subjects:
+  - kind: ServiceAccount
+    name: resource-cache
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: resource-cache
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: {{ .Values.global.image.pullSecretName }}
+
+---
+
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  annotations:
+  name: rtf-resource-cache
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+spec:
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - NET_ADMIN
+    - SYS_ADMIN
+    - SYS_CHROOT
+  runAsUser:
+    rule: MustRunAsNonRoot
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: MustRunAs
+    ranges:
+      - min: 1
+        max: 65535
+  fsGroup:
+    rule: MustRunAs
+    ranges:
+      - min: 1
+        max: 65535
+  volumes:
+    - 'configMap'
+    - 'secret'
+    - 'emptyDir'

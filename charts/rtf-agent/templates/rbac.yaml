@@ -1,0 +1,56 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rtf:agent
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+rules:
+  - apiGroups: ["extensions", "apps"]
+    resources: ["deployments", "deployments/scale", "daemonsets", "replicasets"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "pods/portforward", "pods/exec", "configmaps", "secrets", "services", "namespaces",
+                "nodes", "serviceaccounts", "resourcequotas", "events", "limitranges"]
+    verbs: ["*"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["*"]
+  - apiGroups: ["extensions"]
+    resources: ["jobs"]
+    verbs: ["*"]
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    resourceNames: ["rtf-restricted"]
+    verbs: ["use"]
+  - apiGroups: ["policy", "networking.k8s.io"]
+    resources: ["podsecuritypolicies", "networkpolicies"]
+    verbs: ["*"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["rolebindings", "clusterroles","clusterrolebindings", "roles"]
+    verbs: ["*"]
+  - apiGroups: ["extensions", "networking.k8s.io"]
+    resources: ["ingresses", "networkpolicies"]
+    verbs: ["*"]
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
+  - apiGroups: ["rtf.mulesoft.com"]
+    resources: ["persistencegateways"]
+    verbs: ["*"]
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: rtf:agent
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: rtf-agent
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: rtf:agent
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,76 @@
+{{ if eq "true" (include "isGravity" . ) }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: external-log-forwarder
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+imagePullSecrets:
+  - name: {{ .Values.global.image.pullSecretName }}
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: external-log-forwarder-read
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-log-forwarder-read
+subjects:
+  - kind: ServiceAccount
+    name: external-log-forwarder
+    namespace: {{ .Release.Namespace }}
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: external-log-forwarder-read
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - pods
+    verbs: ["get", "list", "watch"]
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: external-log-forwarder
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - policy
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+    resourceNames:
+      - external-log-forwarder-psp
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: external-log-forwarder
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+roleRef:
+  kind: Role
+  name: external-log-forwarder
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: external-log-forwarder
+    namespace: {{ .Release.Namespace }}
+{{- end }}

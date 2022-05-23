@@ -1,0 +1,78 @@
+{{ if eq "true" (include "isGravity" . ) }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: external-log-forwarder
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- include "annotations.componentTag" "external_log_forwarding" | nindent 4 }}
+  labels:
+    {{- include "labels.rtfComponent" . | nindent 4 }}
+    {{- include "labels.standard" . | nindent 4 }}
+    {{- include "labels.enableComponentClusterHealth" . | nindent 4 }}
+    app: external-log-forwarder
+spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: external-log-forwarder
+  template:
+    metadata:
+      name: external-log-forwarder
+      labels:
+        app: external-log-forwarder
+      annotations:
+        fluentbit.io/exclude: "true"
+    spec:
+      priorityClassName: rtf-components-high-priority
+      nodeSelector:
+        rtf.mulesoft.com/externalLogForwarding: none
+      containers:
+        - name: external-log-forwarder
+          env:
+            - name: MEM_BUF_LIMIT
+              value: 5MB
+          image: {{ template "image.registryEndpoint" . }}/ {{- include "EXTERNAL_LOG_FORWARDER_IMAGE" .}}
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 500m
+              memory: 500Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: FallbackToLogsOnError
+          volumeMounts:
+            - name: configvol
+              mountPath: /fluent-bit/etc/config
+            {{- range $index, $mountPath := .Values.global.containerLogPaths }}
+            - name: {{ printf "container-log-path-%d" $index }}
+              mountPath: {{ $mountPath }}
+              readOnly: true
+            {{- end }}
+      terminationGracePeriodSeconds: 10
+      securityContext:
+        runAsUser: 0
+      volumes:
+        - name: configvol
+          emptyDir: {}
+        {{- range $index, $mountPath := .Values.global.containerLogPaths }}
+        - name: {{ printf "container-log-path-%d" $index }}
+          hostPath:
+            path: {{ $mountPath }}
+            type: ""
+        {{- end }}
+      serviceAccountName: external-log-forwarder
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/ingress
+          operator: Exists
+{{- end }}

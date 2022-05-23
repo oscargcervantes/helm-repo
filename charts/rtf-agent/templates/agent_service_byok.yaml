@@ -1,0 +1,20 @@
+{{ if eq "true" (include "isBYOK" . ) }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: agent
+    {{- include "labels.standard" . | nindent 4 }}
+  name: agent
+  namespace: {{ .Release.Namespace }}
+spec:
+{{- if eq "true" (include "isBYOK" . ) }}
+  clusterIP: {{ default "" ((.Values.global.service).clusterIp).agent }}
+{{- end }}
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: agent
+{{ end }}

@@ -1,0 +1,91 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: certificate-renewal
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    {{- include "annotations.componentTag" "application_management, static_assets" | nindent 4 }}
+  labels:
+    {{- include "labels.rtfComponent" . | nindent 4 }}
+    {{- include "labels.standard" . | nindent 4 }}
+    {{- include "labels.enableComponentClusterHealth" . | nindent 4 }}
+spec:
+  schedule: "0 0 * * 0"
+  concurrencyPolicy: Replace
+  # 3.5 days
+  startingDeadlineSeconds: 302400
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    metadata:
+      labels:
+        cronjob: certificate-renewal
+    spec:
+      template:
+        spec:
+          serviceAccountName: rtf-certificate-renewal
+          restartPolicy: OnFailure
+          priorityClassName: rtf-components-high-priority
+          nodeSelector:
+          {{- include "linux_node_selector_labels" . | nindent 12 }}
+          {{ if eq .Values.global.cluster.flavor "gravitational" }}
+            node-role.kubernetes.io/master: "true"
+          tolerations:
+          - effect: NoSchedule
+            key: node-role.kubernetes.io/master
+            operator: Exists
+          {{ else if .Values.global.core.tolerations }}
+          tolerations:
+          {{- toYaml .Values.global.core.tolerations | nindent 12 -}}
+          {{ end }}
+          {{ if .Values.global.core.affinity }}
+          affinity:
+          {{- toYaml .Values.global.core.affinity | nindent 12 -}}
+          {{ end }}
+          containers:
+            - name: job
+              image: {{ template "image.registryEndpoint" . }}/  {{- include "CLUSTEROPS_IMAGE" .}}
+              envFrom:
+                - configMapRef:
+                    name: app-config
+                - secretRef:
+                    name: generated-properties
+              env:
+              - name: HTTP_PROXY
+                valueFrom:
+                  secretKeyRef:
+                    name: custom-properties
+                    key: HTTP_PROXY
+                    optional: true
+              - name: HTTPS_PROXY
+                valueFrom:
+                  secretKeyRef:
+                    name: custom-properties
+                    key: HTTP_PROXY
+                    optional: true
+              - name: NO_PROXY
+                valueFrom:
+                  secretKeyRef:
+                    name: custom-properties
+                    key: HTTP_NO_PROXY
+                    optional: true
+              - name: QUEUE_ZONE
+                valueFrom:
+                  secretKeyRef:
+                    name: generated-properties
+                    key: QUEUE_ZONE
+              - name: CERT_RENEWAL_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: generated-properties
+                    key: CERT_RENEWAL_URL
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 50Mi
+                limits:
+                  cpu: 100m
+                  memory: 100Mi
+              args:
+              - /app/rtf-cluster-ops
+              - rotate-cert

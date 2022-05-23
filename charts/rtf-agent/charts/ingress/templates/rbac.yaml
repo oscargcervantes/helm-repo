@@ -1,0 +1,77 @@
+{{ if eq "false" (include "isBYOK" . ) }}
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: sf-edge-user
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+rules:
+- apiGroups:
+  - networking.k8s.io
+  - extensions
+  resources:
+  - ingresses
+  verbs:
+  - watch
+- apiGroups:
+  - policy
+  resourceNames:
+  - sf-edge
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - secrets
+  verbs:
+  - list
+  - get
+
+---
+
+
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: sf-edge
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+spec:
+  privileged: false
+  hostNetwork: true
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  fsGroup:
+    rule: RunAsAny
+  hostPorts:
+  - min: 0
+    max: 65535
+  volumes:
+  - '*'
+
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: edge-clusterrole-binding
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+subjects:
+- kind: ServiceAccount
+  name: sf-edge
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: sf-edge-user
+  apiGroup: rbac.authorization.k8s.io
+
+---
+{{- end }}

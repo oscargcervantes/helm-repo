@@ -1,0 +1,1094 @@
+{{ if eq .Values.global.cluster.flavor "gravitational" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+    monitoring: dashboard
+    rtf: grafana-dashboards
+  name: dashboard-applications
+  namespace: {{ default "monitoring" (.Values.global.influxdb).namespace }}
+data:
+  dashboard: |-
+    {
+            "annotations": {
+                "list": []
+            },
+            "editable": false,
+            "hideControls": false,
+            "id": null,
+            "links": [],
+            "originalTitle": "Applications",
+            "refresh": false,
+            "rows": [
+                {
+                    "collapse": false,
+                    "editable": false,
+                    "height": "250px",
+                    "panels": [
+                        {
+                            "aliasColors": {},
+                            "bars": false,
+                            "datasource": null,
+                            "editable": false,
+                            "error": false,
+                            "fill": 1,
+                            "grid": {
+                                "leftLogBase": 1,
+                                "leftMax": null,
+                                "leftMin": null,
+                                "rightLogBase": 1,
+                                "rightMax": null,
+                                "rightMin": null,
+                                "threshold1": null,
+                                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                                "threshold2": null,
+                                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+                            },
+                            "id": 6,
+                            "isNew": true,
+                            "leftYAxisLabel": "Millicores",
+                            "legend": {
+                                "avg": false,
+                                "current": false,
+                                "max": false,
+                                "min": false,
+                                "show": true,
+                                "total": false,
+                                "values": false
+                            },
+                            "lines": true,
+                            "linewidth": 2,
+                            "links": [],
+                            "nullPointMode": "connected",
+                            "percentage": false,
+                            "pointradius": 5,
+                            "points": false,
+                            "renderer": "flot",
+                            "seriesOverrides": [],
+                            "span": 12,
+                            "stack": false,
+                            "steppedLine": false,
+                            "targets": [
+                                {
+                                    "alias": "Usage $tag_pod_name",
+                                    "dsType": "influxdb",
+                                    "groupBy": [
+                                        {
+                                            "params": [
+                                                "$interval"
+                                            ],
+                                            "type": "time"
+                                        },
+                                        {
+                                            "params": [
+                                                "pod_name"
+                                            ],
+                                            "type": "tag"
+                                        },
+                                        {
+                                            "params": [
+                                                "null"
+                                            ],
+                                            "type": "fill"
+                                        }
+                                    ],
+                                    "measurement": "cpu/usage_rate",
+                                    "query": "SELECT sum(\"value\") FROM \"cpu/usage_rate\" WHERE \"type\" = pod_container AND \"namespace_name\" =~ /$Environment$/ AND \"labels\" =~ /$Name/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                                    "rawQuery": false,
+                                    "refId": "A",
+                                    "resultFormat": "time_series",
+                                    "select": [
+                                        [
+                                            {
+                                                "params": [
+                                                    "value"
+                                                ],
+                                                "type": "field"
+                                            },
+                                            {
+                                                "params": [],
+                                                "type": "sum"
+                                            }
+                                        ]
+                                    ],
+                                    "tags": [
+                                        {
+                                            "key": "type",
+                                            "operator": "=",
+                                            "value": "pod_container"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "namespace_name",
+                                            "operator": "=~",
+                                            "value": "/$Environment$/"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "labels",
+                                            "operator": "=~",
+                                            "value": "/$Name/"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "alias": "Limit $tag_pod_name",
+                                    "dsType": "influxdb",
+                                    "groupBy": [
+                                        {
+                                            "params": [
+                                                "$interval"
+                                            ],
+                                            "type": "time"
+                                        },
+                                        {
+                                            "params": [
+                                                "pod_name"
+                                            ],
+                                            "type": "tag"
+                                        },
+                                        {
+                                            "params": [
+                                                "null"
+                                            ],
+                                            "type": "fill"
+                                        }
+                                    ],
+                                    "measurement": "cpu/limit",
+                                    "query": "SELECT sum(\"value\") FROM \"cpu/limit\" WHERE \"type\" = pod_container AND \"namespace_name\" =~ /$Environment$/ AND \"labels\" =~ /$Name/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                                    "rawQuery": false,
+                                    "refId": "B",
+                                    "resultFormat": "time_series",
+                                    "select": [
+                                        [
+                                            {
+                                                "params": [
+                                                    "value"
+                                                ],
+                                                "type": "field"
+                                            },
+                                            {
+                                                "params": [],
+                                                "type": "sum"
+                                            }
+                                        ]
+                                    ],
+                                    "tags": [
+                                        {
+                                            "key": "type",
+                                            "operator": "=",
+                                            "value": "pod_container"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "namespace_name",
+                                            "operator": "=~",
+                                            "value": "/$Environment$/"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "labels",
+                                            "operator": "=~",
+                                            "value": "/$Name/"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "alias": "Request $tag_pod_name",
+                                    "dsType": "influxdb",
+                                    "groupBy": [
+                                        {
+                                            "params": [
+                                                "$interval"
+                                            ],
+                                            "type": "time"
+                                        },
+                                        {
+                                            "params": [
+                                                "pod_name"
+                                            ],
+                                            "type": "tag"
+                                        },
+                                        {
+                                            "params": [
+                                                "null"
+                                            ],
+                                            "type": "fill"
+                                        }
+                                    ],
+                                    "measurement": "cpu/request",
+                                    "query": "SELECT sum(\"value\") FROM \"cpu/request\" WHERE \"type\" = pod_container AND \"namespace_name\" =~ /$Environment$/ AND \"labels\" =~ /$Name/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                                    "rawQuery": false,
+                                    "refId": "C",
+                                    "resultFormat": "time_series",
+                                    "select": [
+                                        [
+                                            {
+                                                "params": [
+                                                    "value"
+                                                ],
+                                                "type": "field"
+                                            },
+                                            {
+                                                "params": [],
+                                                "type": "sum"
+                                            }
+                                        ]
+                                    ],
+                                    "tags": [
+                                        {
+                                            "key": "type",
+                                            "operator": "=",
+                                            "value": "pod_container"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "namespace_name",
+                                            "operator": "=~",
+                                            "value": "/$Environment$/"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "labels",
+                                            "operator": "=~",
+                                            "value": "/$Name/"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "timeFrom": null,
+                            "timeShift": null,
+                            "title": "CPU Usage",
+                            "tooltip": {
+                                "shared": true,
+                                "value_type": "cumulative"
+                            },
+                            "type": "graph",
+                            "x-axis": true,
+                            "y-axis": true,
+                            "y_formats": [
+                                "short",
+                                "short"
+                            ]
+                        },
+                        {
+                                "aliasColors": {},
+                                "bars": false,
+                                "datasource": null,
+                                "editable": false,
+                                "error": false,
+                                "fill": 1,
+                                "grid": {
+                                    "leftLogBase": 1,
+                                    "leftMax": null,
+                                    "leftMin": null,
+                                    "rightLogBase": 1,
+                                    "rightMax": null,
+                                    "rightMin": null,
+                                    "threshold1": null,
+                                    "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                                    "threshold2": null,
+                                    "threshold2Color": "rgba(234, 112, 112, 0.22)"
+                                },
+                                "id": 8,
+                                "isNew": true,
+                                "leftYAxisLabel": "",
+                                "legend": {
+                                    "avg": false,
+                                    "current": false,
+                                    "max": false,
+                                    "min": false,
+                                    "show": true,
+                                    "total": false,
+                                    "values": false
+                                },
+                                "lines": true,
+                                "linewidth": 2,
+                                "links": [],
+                                "nullPointMode": "connected",
+                                "percentage": false,
+                                "pointradius": 5,
+                                "points": false,
+                                "renderer": "flot",
+                                "seriesOverrides": [],
+                                "span": 12,
+                                "stack": false,
+                                "steppedLine": false,
+                                "targets": [
+                                    {
+                                        "alias": "Usage $tag_pod_name",
+                                        "dsType": "influxdb",
+                                        "groupBy": [
+                                            {
+                                                "params": [
+                                                    "$interval"
+                                                ],
+                                                "type": "time"
+                                            },
+                                            {
+                                                "params": [
+                                                    "pod_name"
+                                                ],
+                                                "type": "tag"
+                                            },
+                                            {
+                                                "params": [
+                                                    "null"
+                                                ],
+                                                "type": "fill"
+                                            }
+                                        ],
+                                        "measurement": "memory/usage",
+                                        "query": "SELECT sum(\"value\") FROM \"memory/usage\" WHERE \"type\" = pod_container AND \"namespace_name\" =~ /$Environment$/ AND \"labels\" =~ /$Name/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                                        "rawQuery": false,
+                                        "refId": "A",
+                                        "resultFormat": "time_series",
+                                        "select": [
+                                            [
+                                                {
+                                                    "params": [
+                                                        "value"
+                                                    ],
+                                                    "type": "field"
+                                                },
+                                                {
+                                                    "params": [],
+                                                    "type": "sum"
+                                                }
+                                            ]
+                                        ],
+                                        "tags": [
+                                            {
+                                                "key": "type",
+                                                "operator": "=",
+                                                "value": "pod_container"
+                                            },
+                                            {
+                                                "condition": "AND",
+                                                "key": "namespace_name",
+                                                "operator": "=~",
+                                                "value": "/$Environment$/"
+                                            },
+                                            {
+                                                "condition": "AND",
+                                                "key": "labels",
+                                                "operator": "=~",
+                                                "value": "/$Name/"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "alias": "Limit $tag_pod_name",
+                                        "dsType": "influxdb",
+                                        "groupBy": [
+                                            {
+                                                "params": [
+                                                    "$interval"
+                                                ],
+                                                "type": "time"
+                                            },
+                                            {
+                                                "params": [
+                                                    "pod_name"
+                                                ],
+                                                "type": "tag"
+                                            },
+                                            {
+                                                "params": [
+                                                    "null"
+                                                ],
+                                                "type": "fill"
+                                            }
+                                        ],
+                                        "measurement": "memory/limit",
+                                        "query": "SELECT sum(\"value\") FROM \"memory/limit\" WHERE \"type\" = pod_container AND \"namespace_name\" =~ /$Environment$/ AND \"labels\" =~ /$Name/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                                        "rawQuery": false,
+                                        "refId": "B",
+                                        "resultFormat": "time_series",
+                                        "select": [
+                                            [
+                                                {
+                                                    "params": [
+                                                        "value"
+                                                    ],
+                                                    "type": "field"
+                                                },
+                                                {
+                                                    "params": [],
+                                                    "type": "sum"
+                                                }
+                                            ]
+                                        ],
+                                        "tags": [
+                                            {
+                                                "key": "type",
+                                                "operator": "=",
+                                                "value": "pod_container"
+                                            },
+                                            {
+                                                "condition": "AND",
+                                                "key": "namespace_name",
+                                                "operator": "=~",
+                                                "value": "/$Environment$/"
+                                            },
+                                            {
+                                                "condition": "AND",
+                                                "key": "labels",
+                                                "operator": "=~",
+                                                "value": "/$Name/"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "alias": "Request $tag_pod_name",
+                                        "dsType": "influxdb",
+                                        "groupBy": [
+                                            {
+                                                "params": [
+                                                    "$interval"
+                                                ],
+                                                "type": "time"
+                                            },
+                                            {
+                                                "params": [
+                                                    "pod_name"
+                                                ],
+                                                "type": "tag"
+                                            },
+                                            {
+                                                "params": [
+                                                    "null"
+                                                ],
+                                                "type": "fill"
+                                            }
+                                        ],
+                                        "measurement": "memory/request",
+                                        "query": "SELECT sum(\"value\") FROM \"memory/request\" WHERE \"type\" = pod_container AND \"namespace_name\" =~ /$Environment$/ AND \"labels\" =~ /$Name/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                                        "rawQuery": false,
+                                        "refId": "C",
+                                        "resultFormat": "time_series",
+                                        "select": [
+                                            [
+                                                {
+                                                    "params": [
+                                                        "value"
+                                                    ],
+                                                    "type": "field"
+                                                },
+                                                {
+                                                    "params": [],
+                                                    "type": "sum"
+                                                }
+                                            ]
+                                        ],
+                                        "tags": [
+                                            {
+                                                "key": "type",
+                                                "operator": "=",
+                                                "value": "pod_container"
+                                            },
+                                            {
+                                                "condition": "AND",
+                                                "key": "namespace_name",
+                                                "operator": "=~",
+                                                "value": "/$Environment$/"
+                                            },
+                                            {
+                                                "condition": "AND",
+                                                "key": "labels",
+                                                "operator": "=~",
+                                                "value": "/$Name/"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "alias": "Working Set $tag_pod_name",
+                                        "dsType": "influxdb",
+                                        "groupBy": [
+                                            {
+                                                "params": [
+                                                    "$interval"
+                                                ],
+                                                "type": "time"
+                                            },
+                                            {
+                                                "params": [
+                                                    "pod_name"
+                                                ],
+                                                "type": "tag"
+                                            },
+                                            {
+                                                "params": [
+                                                    "null"
+                                                ],
+                                                "type": "fill"
+                                            }
+                                        ],
+                                        "measurement": "memory/working_set",
+                                        "query": "SELECT sum(\"value\") FROM \"memory/working_set\" WHERE \"type\" = pod_container AND \"namespace_name\" =~ /$Environment$/ AND \"labels\" =~ /$Name/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                                        "rawQuery": false,
+                                        "refId": "D",
+                                        "resultFormat": "time_series",
+                                        "select": [
+                                            [
+                                                {
+                                                    "params": [
+                                                        "value"
+                                                    ],
+                                                    "type": "field"
+                                                },
+                                                {
+                                                    "params": [],
+                                                    "type": "sum"
+                                                }
+                                            ]
+                                        ],
+                                        "tags": [
+                                            {
+                                                "key": "type",
+                                                "operator": "=",
+                                                "value": "pod_container"
+                                            },
+                                            {
+                                                "condition": "AND",
+                                                "key": "namespace_name",
+                                                "operator": "=~",
+                                                "value": "/$Environment$/"
+                                            },
+                                            {
+                                                "condition": "AND",
+                                                "key": "labels",
+                                                "operator": "=~",
+                                                "value": "/$Name/"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "timeFrom": null,
+                                "timeShift": null,
+                                "title": "Memory Usage",
+                                "tooltip": {
+                                    "shared": true,
+                                    "value_type": "cumulative"
+                                },
+                                "type": "graph",
+                                "x-axis": true,
+                                "y-axis": true,
+                                "y_formats": [
+                                    "bytes",
+                                    "short"
+                                ]
+                            },
+                            {
+                            "aliasColors": {},
+                            "bars": false,
+                            "datasource": null,
+                            "editable": false,
+                            "error": false,
+                            "fill": 1,
+                            "grid": {
+                                "leftLogBase": 1,
+                                "leftMax": null,
+                                "leftMin": null,
+                                "rightLogBase": 1,
+                                "rightMax": null,
+                                "rightMin": null,
+                                "threshold1": null,
+                                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                                "threshold2": null,
+                                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+                            },
+                            "id": 10,
+                            "isNew": true,
+                            "leftYAxisLabel": "",
+                            "legend": {
+                                "avg": false,
+                                "current": false,
+                                "max": false,
+                                "min": false,
+                                "show": true,
+                                "total": false,
+                                "values": false
+                            },
+                            "lines": true,
+                            "linewidth": 2,
+                            "links": [],
+                            "nullPointMode": "connected",
+                            "percentage": false,
+                            "pointradius": 5,
+                            "points": false,
+                            "renderer": "flot",
+                            "seriesOverrides": [],
+                            "span": 12,
+                            "stack": false,
+                            "steppedLine": false,
+                            "targets": [
+                                {
+                                    "alias": "Tx $tag_pod_name",
+                                    "dsType": "influxdb",
+                                    "groupBy": [
+                                        {
+                                            "params": [
+                                                "$interval"
+                                            ],
+                                            "type": "time"
+                                        },
+                                        {
+                                            "params": [
+                                               "pod_name"
+                                            ],
+                                            "type": "tag"
+                                        },
+                                        {
+                                            "params": [
+                                                "null"
+                                            ],
+                                            "type": "fill"
+                                        }
+                                    ],
+                                    "measurement": "network/tx_rate",
+                                    "query": "SELECT sum(\"value\") FROM \"network/tx_rate\" WHERE \"type\" = pod AND \"namespace_name\" =~ /$Environment$/ AND \"labels\" =~ /$Name/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                                    "rawQuery": false,
+                                    "refId": "A",
+                                    "resultFormat": "time_series",
+                                    "select": [
+                                        [
+                                            {
+                                                "params": [
+                                                    "value"
+                                                ],
+                                                "type": "field"
+                                            },
+                                            {
+                                                "params": [],
+                                                "type": "sum"
+                                            }
+                                        ]
+                                    ],
+                                    "tags": [
+                                        {
+                                            "key": "type",
+                                            "operator": "=",
+                                            "value": "pod"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "namespace_name",
+                                            "operator": "=~",
+                                            "value": "/$Environment$/"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "labels",
+                                            "operator": "=~",
+                                            "value": "/$Name/"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "alias": "Rx $tag_pod_name",
+                                    "dsType": "influxdb",
+                                    "groupBy": [
+                                        {
+                                            "params": [
+                                                "$interval"
+                                            ],
+                                            "type": "time"
+                                        },
+                                        {
+                                            "params": [
+                                               "pod_name"
+                                            ],
+                                            "type": "tag"
+                                        },
+                                        {
+                                            "params": [
+                                                "null"
+                                            ],
+                                            "type": "fill"
+                                        }
+                                    ],
+                                    "measurement": "network/rx_rate",
+                                    "query": "SELECT sum(\"value\") FROM \"network/rx_rate\" WHERE \"type\" = pod AND \"namespace_name\" =~ /$Environment$/ AND \"labels\" =~ /$Name/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                                    "rawQuery": false,
+                                    "refId": "B",
+                                    "resultFormat": "time_series",
+                                    "select": [
+                                        [
+                                            {
+                                                "params": [
+                                                    "value"
+                                                ],
+                                                "type": "field"
+                                            },
+                                            {
+                                                "params": [],
+                                                "type": "sum"
+                                            }
+                                        ]
+                                    ],
+                                    "tags": [
+                                        {
+                                            "key": "type",
+                                            "operator": "=",
+                                            "value": "pod"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "namespace_name",
+                                            "operator": "=~",
+                                            "value": "/$Environment$/"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "labels",
+                                            "operator": "=~",
+                                            "value": "/$Name/"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "timeFrom": null,
+                            "timeShift": null,
+                            "title": "Network Usage",
+                            "tooltip": {
+                                "shared": true,
+                                "value_type": "cumulative"
+                            },
+                            "type": "graph",
+                            "x-axis": true,
+                            "y-axis": true,
+                            "y_formats": [
+                                "Bps",
+                                "short"
+                            ]
+                        },
+                        {
+                            "aliasColors": {},
+                            "bars": false,
+                            "datasource": null,
+                            "editable": false,
+                            "error": false,
+                            "fill": 1,
+                            "grid": {
+                                "leftLogBase": 1,
+                                "leftMax": null,
+                                "leftMin": null,
+                                "rightLogBase": 1,
+                                "rightMax": null,
+                                "rightMin": null,
+                                "threshold1": null,
+                                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                                "threshold2": null,
+                                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+                            },
+                            "id": 12,
+                            "isNew": true,
+                            "leftYAxisLabel": "",
+                            "legend": {
+                                "avg": false,
+                                "current": false,
+                                "max": false,
+                                "min": false,
+                                "show": true,
+                                "total": false,
+                                "values": false
+                            },
+                            "lines": true,
+                            "linewidth": 2,
+                            "links": [],
+                            "nullPointMode": "connected",
+                            "percentage": false,
+                            "pointradius": 5,
+                            "points": false,
+                            "renderer": "flot",
+                            "seriesOverrides": [],
+                            "span": 12,
+                            "stack": false,
+                            "steppedLine": false,
+                            "targets": [
+                                {
+                                    "alias": "Usage $tag_pod_name",
+                                    "dsType": "influxdb",
+                                    "groupBy": [
+                                        {
+                                            "params": [
+                                                "$interval"
+                                            ],
+                                            "type": "time"
+                                        },
+                                        {
+                                            "params": [
+                                               "pod_name"
+                                            ],
+                                            "type": "tag"
+                                        },
+                                        {
+                                            "params": [
+                                                "null"
+                                            ],
+                                            "type": "fill"
+                                        }
+                                    ],
+                                    "measurement": "filesystem/usage",
+                                    "query": "SELECT sum(\"value\") FROM \"filesystem/usage\" WHERE \"type\" = pod AND \"namespace_name\" =~ /$Environment$/ AND \"labels\" =~ /$Name/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                                    "rawQuery": false,
+                                    "refId": "A",
+                                    "resultFormat": "time_series",
+                                    "select": [
+                                        [
+                                            {
+                                                "params": [
+                                                    "value"
+                                                ],
+                                                "type": "field"
+                                            },
+                                            {
+                                                "params": [],
+                                                "type": "sum"
+                                            }
+                                        ]
+                                    ],
+                                    "tags": [
+                                        {
+                                            "key": "type",
+                                            "operator": "=",
+                                            "value": "pod"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "namespace_name",
+                                            "operator": "=~",
+                                            "value": "/$Environment$/"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "labels",
+                                            "operator": "=~",
+                                            "value": "/$Name/"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "alias": "Limit $tag_pod_name",
+                                    "dsType": "influxdb",
+                                    "groupBy": [
+                                        {
+                                            "params": [
+                                                "$interval"
+                                            ],
+                                            "type": "time"
+                                        },
+                                        {
+                                            "params": [
+                                               "pod_name"
+                                            ],
+                                            "type": "tag"
+                                        },
+                                        {
+                                            "params": [
+                                                "null"
+                                            ],
+                                            "type": "fill"
+                                        }
+                                    ],
+                                    "measurement": "filesystem/limit",
+                                    "query": "SELECT sum(\"value\") FROM \"filesystem/limit\" WHERE \"type\" = pod AND \"namespace_name\" =~ /$Environment$/ AND \"labels\" =~ /$Name/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                                    "rawQuery": false,
+                                    "refId": "B",
+                                    "resultFormat": "time_series",
+                                    "select": [
+                                        [
+                                            {
+                                                "params": [
+                                                    "value"
+                                                ],
+                                                "type": "field"
+                                            },
+                                            {
+                                                "params": [],
+                                                "type": "sum"
+                                            }
+                                        ]
+                                    ],
+                                    "tags": [
+                                        {
+                                            "key": "type",
+                                            "operator": "=",
+                                            "value": "pod"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "namespace_name",
+                                            "operator": "=~",
+                                            "value": "/$Environment$/"
+                                        },
+                                        {
+                                            "condition": "AND",
+                                            "key": "labels",
+                                            "operator": "=~",
+                                            "value": "/$Name/"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "timeFrom": null,
+                            "timeShift": null,
+                            "title": "Filesystem Usage",
+                            "tooltip": {
+                                "shared": true,
+                                "value_type": "cumulative"
+                            },
+                            "type": "graph",
+                            "x-axis": true,
+                            "y-axis": true,
+                            "y_formats": [
+                                "bytes",
+                                "short"
+                            ]
+                        }
+                    ],
+                    "title": "Row"
+                }
+            ],
+            "schemaVersion": 8,
+            "sharedCrosshair": false,
+            "style": "dark",
+            "tags": [],
+            "templating": {
+                "list": [
+                    {
+                        "allFormat": "glob",
+                        "current": {
+                            "tags": [],
+                            "text": "kube-system",
+                            "value": "kube-system"
+                        },
+                        "datasource": null,
+                        "includeAll": false,
+                        "multi": false,
+                        "multiFormat": "glob",
+                        "name": "Environment",
+                        "options": [
+                            {
+                                "selected": false,
+                                "text": "default",
+                                "value": "default"
+                            },
+                            {
+                                "selected": true,
+                                "text": "kube-system",
+                                "value": "kube-system"
+                            }
+                        ],
+                        "query": "SHOW TAG VALUES FROM \"uptime\" WITH KEY = \"namespace_name\" WHERE \"namespace_name\" !~ /kube-system/ AND \"namespace_name\" !~ /monitoring/ AND \"namespace_name\" !~ /rtf/",
+                        "refresh": true,
+                        "type": "query"
+                    },
+                    {
+                        "allFormat": "glob",
+                        "current": {
+                            "tags": [],
+                            "text": "heapster-v19-33x3r",
+                            "value": "heapster-v19-33x3r"
+                        },
+                        "datasource": null,
+                        "includeAll": false,
+                        "multi": false,
+                        "multiFormat": "glob",
+                        "name": "Name",
+                        "options": [
+                            {
+                                "selected": false,
+                                "text": "fluentd-cloud-logging-kubernetes-minion-a7kc",
+                                "value": "fluentd-cloud-logging-kubernetes-minion-a7kc"
+                            },
+                            {
+                                "selected": false,
+                                "text": "fluentd-cloud-logging-kubernetes-minion-hly9",
+                                "value": "fluentd-cloud-logging-kubernetes-minion-hly9"
+                            },
+                            {
+                                "selected": false,
+                                "text": "fluentd-cloud-logging-kubernetes-minion-sfos",
+                                "value": "fluentd-cloud-logging-kubernetes-minion-sfos"
+                            },
+                            {
+                                "selected": true,
+                                "text": "heapster-v19-33x3r",
+                                "value": "heapster-v19-33x3r"
+                            },
+                            {
+                                "selected": false,
+                                "text": "kube-dns-v10-v2yty",
+                                "value": "kube-dns-v10-v2yty"
+                            },
+                            {
+                                "selected": false,
+                                "text": "kubernetes-dashboard-gqcgk",
+                                "value": "kubernetes-dashboard-gqcgk"
+                            },
+                            {
+                                "selected": false,
+                                "text": "kubernetes-dashboard-v0.1.0-jz8z8",
+                                "value": "kubernetes-dashboard-v0.1.0-jz8z8"
+                            },
+                            {
+                                "selected": false,
+                                "text": "l7-lb-controller-eojgv",
+                                "value": "l7-lb-controller-eojgv"
+                            },
+                            {
+                                "selected": false,
+                                "text": "monitoring-influxdb-grafana-v6-qxucl",
+                                "value": "monitoring-influxdb-grafana-v6-qxucl"
+                            },
+                            {
+                                "selected": false,
+                                "text": "php-apache-m19ce",
+                                "value": "php-apache-m19ce"
+                            }
+                        ],
+                        "query": "SHOW TAG VALUES FROM \"uptime\" WITH KEY = \"labels\" WHERE \"namespace_name\" =~ /$Environment$/",
+                        "refresh": true,
+                        "regex": "/app:([^,;]+),.+/",
+                        "type": "query"
+                    }
+                ]
+            },
+            "time": {
+                "from": "now-30m",
+                "to": "now"
+            },
+            "timepicker": {
+                "now": true,
+                "refresh_intervals": [
+                    "5s",
+                    "10s",
+                    "30s",
+                    "1m",
+                    "5m",
+                    "15m",
+                    "30m",
+                    "1h",
+                    "2h",
+                    "1d"
+                ],
+                "time_options": [
+                    "5m",
+                    "15m",
+                    "1h",
+                    "6h",
+                    "12h",
+                    "24h",
+                    "2d",
+                    "7d",
+                    "30d"
+                ]
+            },
+            "timezone": "browser",
+            "title": "Applications",
+            "version": 1
+        }
+{{ end }}

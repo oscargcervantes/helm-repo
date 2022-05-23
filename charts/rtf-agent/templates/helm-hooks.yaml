@@ -1,0 +1,133 @@
+{{- if .Values.activationData }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{.Release.Name}}-pre-delete-hook"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    "rtf.mulesoft.com/hooks": pre-delete
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      serviceAccountName: rtf-agent
+      restartPolicy: Never
+      nodeSelector:
+        {{- include "linux_node_selector_labels" . | nindent 8 }}
+      {{ if .Values.global.core.tolerations }}
+      tolerations:
+       {{- toYaml .Values.global.core.tolerations | nindent 8 -}}
+      {{ end }}
+      {{ if .Values.global.core.affinity }}
+      affinity:
+      {{- toYaml .Values.global.core.affinity | nindent 8 -}}
+      {{ end }}
+      containers:
+        - name: job
+          envFrom:
+          - configMapRef:
+              name: app-config
+          - secretRef:
+              name: generated-properties
+          image: {{ template "image.registryEndpoint" . }}/{{- include "CLUSTEROPS_IMAGE" .}}
+          args:
+          - /app/rtf-cluster-ops
+          - exec-pre-delete
+{{- end }}
+
+{{- if not .Values.activationData }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{.Release.Name}}-pre-upgrade-install-hook"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    "rtf.mulesoft.com/hooks": pre-upgrade
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      serviceAccountName: rtf-agent
+      #priorityClassName: rtf-components-high-priority
+      restartPolicy: Never
+      nodeSelector:
+        {{- include "linux_node_selector_labels" . | nindent 8 }}
+      {{ if eq .Values.global.cluster.flavor "gravitational" }}
+        node-role.kubernetes.io/master: "true"
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+      {{ else if .Values.global.core.tolerations }}
+      tolerations:
+      {{- toYaml .Values.global.core.tolerations | nindent 8 -}}
+      {{ end }}
+      {{ if .Values.global.core.affinity }}
+      affinity:
+      {{- toYaml .Values.global.core.affinity | nindent 8 -}}
+      {{ end }}
+      containers:
+        - name: job
+          env:
+          - name: INFLUX_NS
+            value: {{ default "monitoring" (.Values.global.influxdb).namespace }}
+          - name: CLUSTER_FLAVOR
+            value: {{ .Values.global.cluster.flavor }}
+      {{ if eq .Values.global.cluster.flavor "gravitational" }}
+          - name: RTF_REGISTRY_EP
+            value: {{ template "image.registryEndpoint" . }}
+          - name: TARGET_VERSION
+            value: {{ .Chart.Version | quote }}
+      {{ end }}
+          image: {{ template "image.registryEndpoint" . }}/{{- include "CLUSTEROPS_IMAGE" .}}
+          args:
+          - /app/rtf-cluster-ops
+          - exec-pre-upgrade
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{.Release.Name}}-post-upgrade-hook"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    "rtf.mulesoft.com/hooks": post-upgrade
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      serviceAccountName: rtf-agent
+      restartPolicy: Never
+      nodeSelector:
+        {{- include "linux_node_selector_labels" . | nindent 8 }}
+      {{ if eq .Values.global.cluster.flavor "gravitational" }}
+        node-role.kubernetes.io/master: "true"
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+      {{ else if .Values.global.core.tolerations }}
+      tolerations:
+      {{- toYaml .Values.global.core.tolerations | nindent 8 -}}
+      {{ end }}
+      {{ if .Values.global.core.affinity }}
+      affinity:
+      {{- toYaml .Values.global.core.affinity | nindent 8 -}}
+      {{ end }}
+      containers:
+        - name: job
+          env:
+          - name: CLUSTER_FLAVOR
+            value: {{ .Values.global.cluster.flavor }}
+          image: {{ template "image.registryEndpoint" . }}/{{- include "CLUSTEROPS_IMAGE" .}}
+          args:
+          - /app/rtf-cluster-ops
+          - exec-post-upgrade
+
+{{- end}}

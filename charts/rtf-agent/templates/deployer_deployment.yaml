@@ -1,0 +1,41 @@
+# This is a placeholder for upgrading Agent < 1.4.54 where it specifically looks for "deployer" to check the
+# image version
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "labels.rtfComponent" . | nindent 4 }}
+    {{- include "labels.standard" . | nindent 4 }}
+    app: deployer
+  name: deployer
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: deployer
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      labels:
+        app: deployer
+      name: deployer
+    spec:
+      priorityClassName: rtf-components-high-priority
+      nodeSelector:
+        {{- include "linux_node_selector_labels" . | nindent 8 }}
+      {{- if .Values.global.core.tolerations }}
+      tolerations:
+      {{- toYaml .Values.global.core.tolerations | nindent 8 -}}
+      {{ end }}
+      {{ if .Values.global.core.affinity }}
+      affinity:
+      {{- toYaml .Values.global.core.affinity | nindent 8 -}}
+      {{ end }}
+      containers:
+      - name: app
+        image: {{ template "image.name" . }}
+
+

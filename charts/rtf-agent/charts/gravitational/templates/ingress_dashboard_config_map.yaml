@@ -1,0 +1,903 @@
+{{ if eq .Values.global.cluster.flavor "gravitational" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+    monitoring: dashboard
+    rtf: grafana-dashboards
+  name: dashboard-ingress
+  namespace: {{ default "monitoring" (.Values.global.influxdb).namespace }}
+data:
+  dashboard: |-
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": false,
+      "hideControls": false,
+      "id": null,
+      "links": [],
+      "originalTitle": "Ingress",
+      "refresh": false,
+      "rows": [
+        {
+          "collapse": false,
+          "editable": false,
+          "height": "250px",
+          "panels": [
+            {
+              "aliasColors": {},
+              "bars": false,
+              "datasource": null,
+              "editable": false,
+              "error": false,
+              "fill": 1,
+              "grid": {
+                "leftLogBase": 1,
+                "leftMax": null,
+                "leftMin": null,
+                "rightLogBase": 1,
+                "rightMax": null,
+                "rightMin": null,
+                "threshold1": null,
+                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                "threshold2": null,
+                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+              },
+              "id": 4,
+              "isNew": true,
+              "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": true,
+                "total": false,
+                "values": false
+              },
+              "lines": true,
+              "linewidth": 2,
+              "links": [],
+              "nullPointMode": "connected",
+              "percentage": false,
+              "pointradius": 5,
+              "points": false,
+              "renderer": "flot",
+              "seriesOverrides": [],
+              "span": 12,
+              "stack": false,
+              "steppedLine": false,
+              "targets": [
+                {
+                  "alias": "Usage $tag_pod_name",
+                  "dsType": "influxdb",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "pod_name"
+                      ],
+                      "type": "tag"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "measurement": "cpu/usage_rate",
+                  "query": "SELECT sum(\"value\") FROM \"cpu/usage_rate\" WHERE \"type\" = 'pod' AND \"pod_name\" =~ /ingress-.*/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                  "refId": "A",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "sum"
+                      }
+                    ]
+                  ],
+                  "tags": [
+                    {
+                      "key": "pod_name",
+                      "operator": "=~",
+                      "value": "/ingress-.*/"
+                    }
+                  ]
+                },
+                {
+                  "alias": "Limit $tag_pod_name",
+                  "dsType": "influxdb",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "pod_name"
+                      ],
+                      "type": "tag"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "measurement": "cpu/limit",
+                  "query": "SELECT sum(\"value\") FROM \"cpu/limit\" WHERE \"type\" = 'pod' AND \"pod_name\" =~ /ingress-.*/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                  "refId": "B",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "sum"
+                      }
+                    ]
+                  ],
+                  "tags": [
+                    {
+                      "key": "pod_name",
+                      "operator": "=~",
+                      "value": "/ingress-.*/"
+                    }
+                  ]
+                },
+                {
+                  "alias": "Request $tag_pod_name",
+                  "dsType": "influxdb",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "pod_name"
+                      ],
+                      "type": "tag"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "measurement": "cpu/request",
+                  "query": "SELECT sum(\"value\") FROM \"cpu/request\" WHERE \"type\" = 'pod' AND \"pod_name\" =~ /ingress-.*/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                  "refId": "C",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "sum"
+                      }
+                    ]
+                  ],
+                  "tags": [
+                    {
+                      "key": "pod_name",
+                      "operator": "=~",
+                      "value": "/ingress-.*/"
+                    }
+                  ]
+                }
+              ],
+              "timeFrom": null,
+              "timeShift": null,
+              "title": "CPU Usage by Pod",
+              "tooltip": {
+                "shared": true,
+                "value_type": "cumulative",
+                "sort": 0
+              },
+              "type": "graph",
+              "gridPos": {
+                "x": 0,
+                "y": 7,
+                "w": 24,
+                "h": 7
+              },
+              "yaxes": [
+                {
+                  "show": true,
+                  "min": null,
+                  "max": null,
+                  "logBase": 1,
+                  "format": "short",
+                  "label": "Millicores"
+                },
+                {
+                  "show": true,
+                  "min": null,
+                  "max": null,
+                  "logBase": 1,
+                  "format": "short"
+                }
+              ],
+              "xaxis": {
+                "show": true,
+                "mode": "time",
+                "name": null,
+                "values": [],
+                "buckets": null
+              },
+              "thresholds": [],
+              "yaxis": {
+                "align": false,
+                "alignLevel": null
+              },
+              "dashes": false,
+              "dashLength": 10,
+              "spaceLength": 10
+            },
+            {
+              "aliasColors": {},
+              "bars": false,
+              "datasource": null,
+              "editable": false,
+              "error": false,
+              "fill": 1,
+              "grid": {
+                "leftLogBase": 1,
+                "leftMax": null,
+                "leftMin": null,
+                "rightLogBase": 1,
+                "rightMax": null,
+                "rightMin": null,
+                "threshold1": null,
+                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                "threshold2": null,
+                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+              },
+              "id": 7,
+              "isNew": true,
+              "leftYAxisLabel": "",
+              "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": true,
+                "total": false,
+                "values": false
+              },
+              "lines": true,
+              "linewidth": 2,
+              "links": [],
+              "nullPointMode": "connected",
+              "percentage": false,
+              "pointradius": 5,
+              "points": false,
+              "renderer": "flot",
+              "seriesOverrides": [],
+              "span": 12,
+              "stack": false,
+              "steppedLine": false,
+              "targets": [
+                {
+                  "alias": "Usage $tag_pod_name",
+                  "dsType": "influxdb",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "pod_name"
+                      ],
+                      "type": "tag"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "measurement": "memory/usage",
+                  "query": "SELECT sum(\"value\") FROM \"memory/usage\" WHERE \"type\" = 'pod' AND \"pod_name\" =~ /ingress-.*/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                  "rawQuery": false,
+                  "refId": "A",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "sum"
+                      }
+                    ]
+                  ],
+                  "tags": [
+                    {
+                      "key": "pod_name",
+                      "operator": "=~",
+                      "value": "/ingress-.*/"
+                    }
+                  ]
+                },
+                {
+                  "alias": "Limit $tag_pod_name",
+                  "dsType": "influxdb",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "pod_name"
+                      ],
+                      "type": "tag"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "measurement": "memory/limit",
+                  "query": "SELECT sum(\"value\") FROM \"memory/limit\" WHERE \"type\" = 'pod' AND \"pod_name\" =~ /ingress-.*/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                  "rawQuery": false,
+                  "refId": "B",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "sum"
+                      }
+                    ]
+                  ],
+                  "tags": [
+                    {
+                      "key": "pod_name",
+                      "operator": "=~",
+                      "value": "/ingress-.*/"
+                    }
+                  ]
+                },
+                {
+                  "alias": "Request $tag_pod_name",
+                  "dsType": "influxdb",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "pod_name"
+                      ],
+                      "type": "tag"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "measurement": "memory/request",
+                  "query": "SELECT sum(\"value\") FROM \"memory/request\" WHERE \"type\" = 'pod' AND \"pod_name\" =~ /ingress-.*/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                  "rawQuery": false,
+                  "refId": "C",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "sum"
+                      }
+                    ]
+                  ],
+                  "tags": [
+                    {
+                      "key": "pod_name",
+                      "operator": "=~",
+                      "value": "/ingress-.*/"
+                    }
+                  ]
+                },
+                {
+                  "alias": "Working Set $namespace $podname $tag_container_name",
+                  "dsType": "influxdb",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "container_name"
+                      ],
+                      "type": "tag"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "measurement": "memory/working_set",
+                  "query": "SELECT sum(\"value\") FROM \"memory/working_set\" WHERE \"type\" = pod_container AND \"namespace_name\" =~ /$namespace$/ AND \"pod_name\" =~ /$podname$/ AND $timeFilter GROUP BY time($interval), \"container_name\" fill(null)",
+                  "rawQuery": false,
+                  "refId": "D",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "sum"
+                      }
+                    ]
+                  ],
+                  "tags": [
+                    {
+                      "key": "type",
+                      "operator": "=",
+                      "value": "pod_container"
+                    },
+                    {
+                      "condition": "AND",
+                      "key": "namespace_name",
+                      "operator": "=~",
+                      "value": "/$namespace$/"
+                    },
+                    {
+                      "condition": "AND",
+                      "key": "pod_name",
+                      "operator": "=~",
+                      "value": "/$podname$/"
+                    }
+                  ]
+                }
+              ],
+              "timeFrom": null,
+              "timeShift": null,
+              "title": "Memory Usage by Pod",
+              "tooltip": {
+                "shared": true,
+                "value_type": "cumulative"
+              },
+              "type": "graph",
+              "x-axis": true,
+              "y-axis": true,
+              "y_formats": [
+                "bytes",
+                "short"
+              ]
+            },
+            {
+              "aliasColors": {},
+              "bars": false,
+              "datasource": null,
+              "editable": false,
+              "error": false,
+              "fill": 1,
+              "grid": {
+                "leftLogBase": 1,
+                "leftMax": null,
+                "leftMin": null,
+                "rightLogBase": 1,
+                "rightMax": null,
+                "rightMin": null,
+                "threshold1": null,
+                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                "threshold2": null,
+                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+              },
+              "id": 8,
+              "isNew": true,
+              "leftYAxisLabel": "",
+              "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": true,
+                "total": false,
+                "values": false
+              },
+              "lines": true,
+              "linewidth": 2,
+              "links": [],
+              "nullPointMode": "connected",
+              "percentage": false,
+              "pointradius": 5,
+              "points": false,
+              "renderer": "flot",
+              "seriesOverrides": [],
+              "span": 12,
+              "stack": false,
+              "steppedLine": false,
+              "targets": [
+                {
+                  "alias": "Tx $tag_pod_name",
+                  "dsType": "influxdb",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "pod_name"
+                      ],
+                      "type": "tag"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "measurement": "network/tx_rate",
+                  "query": "SELECT sum(\"value\") FROM \"network/tx_rate\" WHERE \"type\" = 'pod' AND \"pod_name\" =~ /ingress-.*/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                  "rawQuery": false,
+                  "refId": "A",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "sum"
+                      }
+                    ]
+                  ],
+                  "tags": [
+                    {
+                      "key": "pod_name",
+                      "operator": "=~",
+                      "value": "/ingress-.*/"
+                    }
+                  ]
+                },
+                {
+                  "alias": "Rx $tag_pod_name",
+                  "dsType": "influxdb",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "pod_name"
+                      ],
+                      "type": "tag"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "measurement": "network/rx_rate",
+                  "query": "SELECT sum(\"value\") FROM \"network/rx_rate\" WHERE \"type\" = 'pod' AND \"pod_name\" =~ /ingress-.*/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                  "rawQuery": false,
+                  "refId": "B",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "sum"
+                      }
+                    ]
+                  ],
+                  "tags": [
+                    {
+                      "key": "pod_name",
+                      "operator": "=~",
+                      "value": "/ingress-.*/"
+                    }
+                  ]
+                }
+              ],
+              "timeFrom": null,
+              "timeShift": null,
+              "title": "Network Usage by Pod",
+              "tooltip": {
+                "shared": true,
+                "value_type": "cumulative"
+              },
+              "type": "graph",
+              "x-axis": true,
+              "y-axis": true,
+              "y_formats": [
+                "Bps",
+                "short"
+              ]
+            },
+            {
+              "aliasColors": {},
+              "bars": false,
+              "datasource": null,
+              "editable": false,
+              "error": false,
+              "fill": 1,
+              "grid": {
+                "leftLogBase": 1,
+                "leftMax": null,
+                "leftMin": null,
+                "rightLogBase": 1,
+                "rightMax": null,
+                "rightMin": null,
+                "threshold1": null,
+                "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                "threshold2": null,
+                "threshold2Color": "rgba(234, 112, 112, 0.22)"
+              },
+              "id": 9,
+              "isNew": true,
+              "leftYAxisLabel": "",
+              "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": true,
+                "total": false,
+                "values": false
+              },
+              "lines": true,
+              "linewidth": 2,
+              "links": [],
+              "nullPointMode": "connected",
+              "percentage": false,
+              "pointradius": 5,
+              "points": false,
+              "renderer": "flot",
+              "seriesOverrides": [],
+              "span": 12,
+              "stack": false,
+              "steppedLine": false,
+              "targets": [
+                {
+                  "alias": "Usage $tag_pod_name",
+                  "dsType": "influxdb",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "pod_name"
+                      ],
+                      "type": "tag"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "measurement": "filesystem/usage",
+                  "query": "SELECT sum(\"value\") FROM \"filesystem/usage\" WHERE \"type\" = 'pod' AND \"pod_name\" =~ /ingress-.*/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                  "rawQuery": false,
+                  "refId": "A",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "sum"
+                      }
+                    ]
+                  ],
+                  "tags": [
+                    {
+                      "key": "pod_name",
+                      "operator": "=~",
+                      "value": "/ingress-.*/"
+                    }
+                  ]
+                },
+                {
+                  "alias": "Limit $tag_pod_name",
+                  "dsType": "influxdb",
+                  "groupBy": [
+                    {
+                      "params": [
+                        "$interval"
+                      ],
+                      "type": "time"
+                    },
+                    {
+                      "params": [
+                        "pod_name"
+                      ],
+                      "type": "tag"
+                    },
+                    {
+                      "params": [
+                        "null"
+                      ],
+                      "type": "fill"
+                    }
+                  ],
+                  "measurement": "filesystem/limit",
+                  "query": "SELECT sum(\"value\") FROM \"filesystem/limit\" WHERE \"type\" = 'pod' AND \"pod_name\" =~ /ingress-.*/ AND $timeFilter GROUP BY time($interval), \"pod_name\" fill(null)",
+                  "rawQuery": false,
+                  "refId": "B",
+                  "resultFormat": "time_series",
+                  "select": [
+                    [
+                      {
+                        "params": [
+                          "value"
+                        ],
+                        "type": "field"
+                      },
+                      {
+                        "params": [],
+                        "type": "sum"
+                      }
+                    ]
+                  ],
+                  "tags": [
+                    {
+                      "key": "pod_name",
+                      "operator": "=~",
+                      "value": "/ingress-.*/"
+                    }
+                  ]
+                }
+              ],
+              "timeFrom": null,
+              "timeShift": null,
+              "title": "Filesystem Usage by Pod",
+              "tooltip": {
+                "shared": true,
+                "value_type": "cumulative"
+              },
+              "type": "graph",
+              "x-axis": true,
+              "y-axis": true,
+              "y_formats": [
+                "bytes",
+                "short"
+              ]
+            }
+          ],
+          "title": "Row"
+        }
+      ],
+      "schemaVersion": 8,
+      "sharedCrosshair": false,
+      "style": "dark",
+      "tags": [],
+      "templating": {},
+      "time": {
+        "from": "now-30m",
+        "to": "now"
+      },
+      "timepicker": {
+        "now": true,
+        "refresh_intervals": [
+          "5s",
+          "10s",
+          "30s",
+          "1m",
+          "5m",
+          "15m",
+          "30m",
+          "1h",
+          "2h",
+          "1d"
+        ],
+        "time_options": [
+          "5m",
+          "15m",
+          "1h",
+          "6h",
+          "12h",
+          "24h",
+          "2d",
+          "7d",
+          "30d"
+        ]
+      },
+      "timezone": "browser",
+      "title": "Ingress",
+      "version": 1
+    }
+{{ end }}

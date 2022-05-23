@@ -1,0 +1,95 @@
+{{- if not .Values.activationData }}
+{{ if eq "false" (include "isGravity" . ) }}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: rtf-upgrade
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+    # Allow core volume types.
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    # This policy assumes the nodes are using AppArmor rather than SELinux.
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1
+        max: 65535
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1
+        max: 65535
+  readOnlyRootFilesystem: false
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rtf-upgrade
+  namespace: rtf
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+imagePullSecrets:
+  - name: {{ .Values.global.image.pullSecretName }}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rtf:upgrade
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - policy
+    resourceNames:
+      - rtf-upgrade
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - '*'
+  - nonResourceURLs:
+      - '*'
+    verbs:
+      - '*'
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rtf:upgrade
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rtf:upgrade
+subjects:
+  - kind: ServiceAccount
+    name: rtf-upgrade
+    namespace: rtf
+{{ end }}
+{{ end }}

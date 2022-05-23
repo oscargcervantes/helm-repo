@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+data:
+  CHART_VERSION: {{ .Chart.Version | quote }}
+  CLUSTER_FLAVOR: {{ .Values.global.cluster.flavor | quote }}
+  CONTAINER_MONITORING_IMAGE: {{- include "CONTAINER_MONITORING_IMAGE" . | nindent 4 }}
+  CLUSTEROPS_IMAGE: {{- include "CLUSTEROPS_IMAGE" . | nindent 4 }}
+  CONTAINER_INIT_IMAGE: {{- include "CONTAINER_INIT_IMAGE" . | nindent 4 }}
+  CONTAINER_PERSISTENCE_GATEWAY_IMAGE: {{- include "CONTAINER_PERSISTENCE_GATEWAY_IMAGE" . | nindent 4 }}
+  CUSTOM_RESOURCES_DEFINITIONS: {{- include "CUSTOM_RESOURCES_DEFINITIONS" . | nindent 4 }}
+  EXTERNAL_LOG_FORWARDER: {{- include "EXTERNAL_LOG_FORWARDER_IMAGE" . | nindent 4 }}
+  CORE_ACTION: {{- include "CORE_ACTION_IMAGE" . | nindent 4 }}
+  ACTIVATION_DATA: {{ default "" .Values.activationData | quote }}
+  NS: {{ .Release.Namespace | quote }}
+  IMAGE_PULLSECRETNAME: {{ .Values.global.image.pullSecretName | quote }}
+  IMAGE_REGISTRY: {{ include "image.registryEndpoint" . | quote }}
+  ANYPOINT_MONITORING_LOGGING: {{ .Values.global.logForwarding.anypointMonitoring | quote }}
+  DEPLOYMENT_NODESELECTOR: {{ .Values.global.deployment.nodeSelector | quote }}
+  CONTAINERLOGPATHS: {{ join "," .Values.global.containerLogPaths | trimPrefix "[ " | trimSuffix " ]" | quote }}
+  {{- if .Values.global.core.tolerations }}
+  CORE_TOLERATIONS: {{ (toJson .Values.global.core.tolerations) | quote }}
+  {{- end }}
+  {{- if .Values.global.core.affinity }}
+  CORE_AFFINITY: {{ (toJson .Values.global.core.affinity) | quote }}
+  {{- end }}

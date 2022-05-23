@@ -1,0 +1,104 @@
+{{- if (and .Values.enabled .Values.global.logForwarding.anypointMonitoring) }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    {{- include "annotations.componentTag" "monitoring" | nindent 4 }}
+  labels:
+    {{- include "labels.rtfComponent" . | nindent 4 }}
+    {{- include "labels.standard" . | nindent 4 }}
+    {{- include "labels.enableComponentClusterHealth" . | nindent 4 }}
+    type: am-log-forwarder
+  name: am-log-forwarder
+  namespace: {{ .Release.Namespace }}
+spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: am-log-forwarder
+  template:
+    metadata:
+      labels:
+        app: am-log-forwarder
+      name: am-log-forwarder
+    spec:
+      automountServiceAccountToken: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      serviceAccount: am-log-forwarder
+      serviceAccountName: am-log-forwarder
+      terminationGracePeriodSeconds: 30
+      priorityClassName: rtf-components-high-priority
+      volumes:
+        - name: monitoring-certs
+          secret:
+            defaultMode: 420
+            secretName: rtf-monitoring-certificate
+        {{- range $index, $mountPath := .Values.global.containerLogPaths }}
+        - name: {{ printf "container-log-path-%d" $index }}
+          hostPath:
+            path: {{ $mountPath }}
+            type: ""
+        {{- end }}
+        # data folder stores a registry of read status for all files, so we don't send everything again on pod restart
+        - name: data
+          hostPath:
+            path: /var/lib/filebeat-data
+            type: DirectoryOrCreate
+      nodeSelector:
+        {{- include "linux_node_selector_labels" . | nindent 8 }}
+      containers:
+        - name: log-forwarder
+          env:
+            - name: INGEST_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: generated-properties
+                  key: MONITORING_INGESTURL
+            - name: INGEST_HOST_LEGACY
+              valueFrom:
+                secretKeyRef:
+                  name: generated-properties
+                  key: MONITORING_INGESTURLLEGACY
+            - name: MODE
+              value: logs
+            - name: GC_INTERVAL
+              value: 60s
+            - name: LOGGING_METRICS_ENABLED
+              value: "false"
+            - name: LOGGING_LEVEL
+              value: warning
+            - name: PROXY_URL
+              valueFrom:
+                secretKeyRef:
+                  name: custom-properties
+                  key: MONITORING_PROXY
+                  optional: true
+          image: {{ template "image.registryEndpoint" . }}/ {{- include "CONTAINER_MONITORING_IMAGE" . }}
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 600m
+              memory: 2Gi
+            requests:
+              cpu: 200m
+              memory: 200Mi
+          securityContext:
+            runAsUser: 0
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - name: monitoring-certs
+              mountPath: /data/certs
+            {{- range $index, $mountPath := .Values.global.containerLogPaths }}
+            - name: {{ printf "container-log-path-%d" $index }}
+              mountPath: {{ $mountPath }}
+              readOnly: true
+            {{- end }}
+            - name: data
+              mountPath: /opt/am/filebeat/data
+{{end}}

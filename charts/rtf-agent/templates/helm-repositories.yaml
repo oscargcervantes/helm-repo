@@ -1,0 +1,13 @@
+{{- if .Values.helm }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: helm-repository-file
+  namespace:  {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+type: Opaque
+stringData:
+  repositories.yaml: |
+{{ .Values.helm.repositoryFile | indent 4 }}
+{{- end }}

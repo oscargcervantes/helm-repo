@@ -1,0 +1,27 @@
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  annotations:
+  name: rtf-restricted
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  fsGroup:
+    rule: RunAsAny
+  requiredDropCapabilities:
+    - NET_ADMIN
+    - SYS_ADMIN
+    - SYS_CHROOT
+  runAsUser:
+    ranges:
+      - max: 65000
+        min: 2000
+    rule: MustRunAs
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+    - '*'

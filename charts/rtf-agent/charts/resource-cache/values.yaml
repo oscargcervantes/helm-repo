@@ -1,0 +1,20 @@
+nginx:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+    limits:
+      cpu: 500m
+      memory: 250Mi
+  workerConnections: 32
+  rate: 5r/s
+  burst: 10
+  delay: 6
+fetcher:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 50Mi
+    limits:
+      cpu: 50m
+      memory: 100Mi

@@ -1,0 +1,69 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rtf:certificate-renewal
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - configmaps
+    verbs:
+      - list
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - list
+      - get
+      - deletecollection
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - get
+      - update
+      - patch
+  - apiGroups:
+      - policy
+    resourceNames:
+      - rtf-restricted
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rtf:certificate-renewal
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rtf:certificate-renewal
+subjects:
+  - kind: ServiceAccount
+    name: rtf-certificate-renewal
+    namespace: {{ .Release.Namespace }}
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rtf-certificate-renewal
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+imagePullSecrets:
+  - name: {{ .Values.global.image.pullSecretName }}

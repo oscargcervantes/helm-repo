@@ -1,0 +1,48 @@
+{{- if .Values.enabled }}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: am-log-forwarder-psp
+  labels:
+    {{- include "labels.standard" . | nindent 4 }}
+spec:
+  privileged: true
+  allowPrivilegeEscalation: false
+  allowedHostPaths:
+    - pathPrefix: /var/lib/filebeat-data
+      readOnly: false
+    {{- range $mountPath := .Values.global.containerLogPaths }}
+    - pathPrefix: {{ $mountPath }}
+      readOnly: true
+    {{- end }}
+  volumes:
+    - configMap
+    - secret
+    - hostPath
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: MustRunAs
+    ranges:
+      - min: 0
+        max: 0
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: MustRunAs
+    ranges:
+      # Forbid adding the root group.
+      - min: 1
+        max: 65535
+  fsGroup:
+    rule: MustRunAs
+    ranges:
+      # Forbid adding the root group.
+      - min: 1
+        max: 65535
+  hostPorts:
+    - min: 1
+      max: 65535
+  readOnlyRootFilesystem: false
+{{end}}

@@ -1,0 +1,6 @@
+apiVersion: v1
+description: Object store v2 API for mule apps
+name: persistence-gateway
+sources:
+- https://github.com/mulesoft/rtf-object-store
+version: 0.1.0

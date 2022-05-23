@@ -1,0 +1,102 @@
+{{- define "cluster-status-job-spec" -}}
+spec:
+  activeDeadlineSeconds: 300
+  backoffLimit: 0
+  completions: 1
+  parallelism: 1
+  template:
+    spec:
+      serviceAccountName: cluster-status
+      restartPolicy: Never
+      priorityClassName: rtf-components-high-priority
+      nodeSelector:
+        {{- include "linux_node_selector_labels" . | nindent 8 }}
+      {{ if eq .Values.global.cluster.flavor "gravitational" }}
+        node-role.kubernetes.io/master: "true"
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+      hostNetwork: true
+      volumes:
+        - hostPath:
+            path: /usr/bin
+          name: usr-bin
+        - hostPath:
+            path: /var/lib/gravity
+          name: gravity-dir
+        - hostPath:
+            path: /usr/bin/helm
+          name: helm
+      {{ else if .Values.global.core.tolerations }}
+      tolerations:
+      {{- toYaml .Values.global.core.tolerations | nindent 8 -}}
+      {{ end }}
+      {{ if .Values.global.core.affinity }}
+      affinity:
+      {{- toYaml .Values.global.core.affinity | nindent 8 -}}
+      {{ end }}
+      containers:
+        - name: job
+          image: {{ template "image.registryEndpoint" . }}/ {{- include "CLUSTEROPS_IMAGE" .}}
+          securityContext:
+            runAsUser: 0
+          {{ if eq .Values.global.cluster.flavor "gravitational" }}
+          volumeMounts:
+            - mountPath: /var/lib/gravity/
+              name: gravity-dir
+            - mountPath: /usr/bin/gravity
+              name: usr-bin
+              subPath: gravity
+            - mountPath: /usr/local/bin/helm-on-host
+              name: helm
+              readOnly: true
+          {{ end }}
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: generated-properties
+          env:
+            - name: GODEBUG
+              value: netdns=cgo
+            - name: LOG_LEVEL
+              value: Debug
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: HTTP_PROXY
+              valueFrom:
+                secretKeyRef:
+                  name: custom-properties
+                  key: HTTP_PROXY
+                  optional: true
+            - name: HTTPS_PROXY
+              valueFrom:
+                secretKeyRef:
+                  name: custom-properties
+                  key: HTTP_PROXY
+                  optional: true
+            - name: NO_PROXY
+              valueFrom:
+                secretKeyRef:
+                  name: custom-properties
+                  key: HTTP_NO_PROXY
+                  optional: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 50Mi
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          command:
+            - ./rtf-cluster-ops
+            - status
+            - -o
+            - json
+            - --configmap
+            - "true"
+{{- end -}}
