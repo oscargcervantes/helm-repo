@@ -1,0 +1,46 @@
+activationData:
+#http.proxy: ""
+#http.no_proxy: ""
+#monitoring.proxy: ""
+muleLicense: 
+global:
+  cluster:
+    flavor: "byok"
+  image:
+    rtfRegistry: rtf-runtime-registry.kstg.msap.io
+    pullSecretName: rtf-pull-secret
+  containerLogPaths:
+  - /var/lib/docker/containers
+  - /var/log/containers
+  - /var/log/pods
+  logForwarding:
+    anypointMonitoring: false
+  core:
+    tolerations: []
+    affinity: {}
+  deployment:
+    nodeSelector: ""
+  service:
+    clusterIp:
+agent:
+  app:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200Mi
+      limits:
+        cpu: 1000m
+        memory: 500Mi
+  rtfd:
+    resources:
+      requests:
+        cpu: 20m
+        memory: 50Mi
+      limits:
+        cpu: 50m
+        memory: 50Mi
+http:
+  proxy: "noProxy"
+  no_proxy: "Proxy"
+monitoring:
+  proxy: "noProxy"
